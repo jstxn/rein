@@ -1,6 +1,6 @@
 {
   "name": "@jstxn/rein",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "REIN harness installer for Codex",
   "type": "module",
   "bin": {
