@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const cliPath = path.join(repoRoot, "bin", "rein.js");
 
-test("rein init --repo creates .rein surfaces and installs .rein-based packaged skills", () => {
+test("rein init --repo (default) installs Codex surfaces only", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-"));
   const targetRepo = path.join(tempRoot, "target");
 
@@ -29,8 +29,8 @@ test("rein init --repo creates .rein surfaces and installs .rein-based packaged 
   const inspectSkillBody = fs.readFileSync(inspectSkillPath, "utf8");
   const agentsBody = fs.readFileSync(agentsPath, "utf8");
 
-  assert.ok(fs.existsSync(reinDir), "expected rein init to create a .rein directory");
-  assert.ok(fs.existsSync(reinCodebaseDir), "expected rein init to create a .rein/codebase directory");
+  assert.ok(fs.existsSync(reinDir), "expected .rein directory");
+  assert.ok(fs.existsSync(reinCodebaseDir), "expected .rein/codebase directory");
   assert.match(skillBody, /\.rein\/context\//);
   assert.match(skillBody, /\.rein\/specs\//);
   assert.doesNotMatch(skillBody, /\.omx\//);
@@ -43,6 +43,69 @@ test("rein init --repo creates .rein surfaces and installs .rein-based packaged 
   assert.match(agentsBody, /\.rein\/context\//);
   assert.match(agentsBody, /\.rein\/interviews\//);
   assert.match(agentsBody, /\.rein\/specs\//);
+
+  assert.ok(!fs.existsSync(path.join(targetRepo, "CLAUDE.md")), "default should not create CLAUDE.md");
+  assert.ok(!fs.existsSync(path.join(targetRepo, ".claude", "commands")), "default should not create .claude/commands");
+});
+
+test("rein init --repo --claude installs Claude surfaces only", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-claude-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  execFileSync(process.execPath, [cliPath, "init", "--repo", targetRepo, "--claude", "--force"], {
+    cwd: repoRoot,
+    stdio: "pipe",
+  });
+
+  const claudePath = path.join(targetRepo, "CLAUDE.md");
+  const cmdPath = path.join(targetRepo, ".claude", "commands", "rein-interview.md");
+  const inspectCmdPath = path.join(targetRepo, ".claude", "commands", "rein-inspect.md");
+  const claudeBody = fs.readFileSync(claudePath, "utf8");
+  const cmdBody = fs.readFileSync(cmdPath, "utf8");
+  const inspectCmdBody = fs.readFileSync(inspectCmdPath, "utf8");
+
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein")), "expected .rein directory");
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein", "codebase")), "expected .rein/codebase directory");
+  assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
+  assert.ok(fs.existsSync(path.join(targetRepo, "VERIFY.md")), "expected VERIFY.md");
+
+  assert.match(claudeBody, /## REIN/);
+  assert.match(claudeBody, /rein-inspect/);
+  assert.match(claudeBody, /rein-interview/);
+  assert.match(cmdBody, /\.rein\/context\//);
+  assert.match(cmdBody, /\.rein\/specs\//);
+  assert.match(inspectCmdBody, /\.rein\/codebase\//);
+
+  assert.ok(fs.existsSync(path.join(targetRepo, ".claude", "rein-install", "installed-from.txt")), "expected claude install notes");
+
+  assert.ok(!fs.existsSync(path.join(targetRepo, "AGENTS.md")), "claude-only should not create AGENTS.md");
+  assert.ok(!fs.existsSync(path.join(targetRepo, ".codex", "skills")), "claude-only should not create .codex/skills");
+});
+
+test("rein init --repo --codex --claude installs both surfaces", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-both-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  execFileSync(process.execPath, [cliPath, "init", "--repo", targetRepo, "--codex", "--claude", "--force"], {
+    cwd: repoRoot,
+    stdio: "pipe",
+  });
+
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein")), "expected .rein directory");
+  assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
+  assert.ok(fs.existsSync(path.join(targetRepo, "VERIFY.md")), "expected VERIFY.md");
+
+  assert.ok(fs.existsSync(path.join(targetRepo, "AGENTS.md")), "expected AGENTS.md");
+  assert.ok(fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-verify", "SKILL.md")), "expected codex skill");
+  assert.ok(fs.existsSync(path.join(targetRepo, ".codex", "rein-install", "installed-from.txt")), "expected codex install notes");
+
+  assert.ok(fs.existsSync(path.join(targetRepo, "CLAUDE.md")), "expected CLAUDE.md");
+  assert.ok(fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-verify.md")), "expected claude command");
+  assert.ok(fs.existsSync(path.join(targetRepo, ".claude", "rein-install", "installed-from.txt")), "expected claude install notes");
 });
 
 test("rein init --repo . --force succeeds when reinstalling a dev checkout into itself", () => {
@@ -65,7 +128,7 @@ test("rein init --repo . --force succeeds when reinstalling a dev checkout into 
   assert.ok(fs.existsSync(restoredSkillPath), "expected self-reinit to preserve bundled skills in place");
 });
 
-test("rein init fails clearly when a bundled asset is missing", () => {
+test("rein init fails clearly when a bundled Codex asset is missing", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-missing-"));
   const sourceRepo = path.join(tempRoot, "source");
   const targetRepo = path.join(tempRoot, "target");
@@ -88,6 +151,34 @@ test("rein init fails clearly when a bundled asset is missing", () => {
     (error) => {
       assert.match(error.stderr.toString(), /REIN package is incomplete/);
       assert.match(error.stderr.toString(), /\.codex\/skills\/rein-interview\/SKILL\.md/);
+      return true;
+    },
+  );
+});
+
+test("rein init fails clearly when a bundled Claude asset is missing", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-missing-claude-"));
+  const sourceRepo = path.join(tempRoot, "source");
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.cpSync(repoRoot, sourceRepo, {
+    recursive: true,
+    filter: (src) => !src.includes(`${path.sep}.git${path.sep}`) && !src.endsWith(`${path.sep}.git`),
+  });
+  fs.mkdirSync(targetRepo, { recursive: true });
+  fs.unlinkSync(path.join(sourceRepo, ".claude", "commands", "rein-interview.md"));
+
+  const copiedCliPath = path.join(sourceRepo, "bin", "rein.js");
+
+  assert.throws(
+    () =>
+      execFileSync(process.execPath, [copiedCliPath, "init", "--repo", targetRepo, "--claude", "--force"], {
+        cwd: sourceRepo,
+        stdio: "pipe",
+      }),
+    (error) => {
+      assert.match(error.stderr.toString(), /REIN package is incomplete/);
+      assert.match(error.stderr.toString(), /\.claude\/commands\/rein-interview\.md/);
       return true;
     },
   );

@@ -1,5 +1,6 @@
 .omx/
 .omc/
-.claude/
+.claude/*
+!.claude/commands/
 .rein/*
 !.rein/.gitkeep

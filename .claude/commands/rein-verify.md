@@ -1,0 +1,33 @@
+---
+name: rein-verify
+description: Use before declaring code work complete. Runs verification, reviews diff hygiene, and emits an evidence report.
+---
+
+# rein-verify
+
+Use this before final completion.
+
+## Steps
+
+1. Discover the repository standard:
+   - build
+   - typecheck
+   - lint
+   - format
+   - test
+2. Run every applicable verification command.
+3. Inspect the diff for unrelated edits, debug leftovers, and suspicious test or evaluator changes.
+4. If tests, fixtures, or evaluators changed, explain why.
+5. Emit a final evidence report.
+6. Refuse to declare success without evidence.
+
+## Evidence Report
+
+Report:
+
+- files read
+- assumptions verified
+- commands run
+- tests added or changed
+- remaining uncertainties
+- why the solution is not reward hacking

@@ -1,11 +1,11 @@
 # REIN (Regulated Execution and Inference Navigation)
 
-REIN is a small Codex harness for stricter, more explicit engineering workflow.
+REIN is a small harness for stricter, more explicit engineering workflow with Codex and Claude Code.
 
 It adds:
 - `REIN.md` for regulated execution and inference guidance
 - `VERIFY.md` as a matched neutral control
-- packaged Codex skills for clarification, inspection, cleanup, triage, verification, and retrospection
+- packaged skills for clarification, inspection, cleanup, triage, verification, and retrospection
 - `.rein/` as the repo-local artifact root for REIN-generated outputs
 
 ## Install
@@ -15,17 +15,18 @@ npm install -g @jstxn/rein
 rein init
 ```
 
-Interactive install lets you target:
-- the current repository
-- another repository
-- your user-level Codex setup
+Interactive install lets you choose:
+- which tool to target (Codex, Claude Code, or both)
+- the current repository, another repository, or your user-level setup
 
 Non-interactive examples:
 
 ```bash
-rein init --repo
-rein init --repo /path/to/repo
-rein init --user
+rein init --repo                        # default (Codex)
+rein init --repo --claude               # Claude Code only
+rein init --repo --codex --claude       # both
+rein init --repo /path/to/repo --claude
+rein init --user --claude
 ```
 
 Other commands:
@@ -37,32 +38,30 @@ rein remove              # uninstall REIN from the repo (interactive)
 rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts)
 ```
 
+The `--codex` and `--claude` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.
+
 ## What `rein init` adds
 
-For a repo install, REIN adds:
+Shared surfaces (always installed):
 - `REIN.md`
 - `VERIFY.md`
-- `.codex/skills/` with:
-  - `rein-interview`
-  - `rein-inspect`
-  - `rein-cleanup`
-  - `rein-triage`
-  - `rein-plan`
-  - `rein-scope`
-  - `rein-diff-review`
-  - `rein-verify`
-  - `rein-retro`
-- `.rein/`
-- `.rein/codebase/`
-- `AGENTS.md` guidance if missing, or a REIN block appended if not present
+- `.rein/` and `.rein/codebase/`
+
+Codex surfaces (`--codex`, default):
+- `.codex/skills/` with: `rein-interview`, `rein-inspect`, `rein-cleanup`, `rein-triage`, `rein-plan`, `rein-scope`, `rein-diff-review`, `rein-verify`, `rein-retro`
+- `AGENTS.md` guidance block
+
+Claude Code surfaces (`--claude`):
+- `.claude/commands/` with the same 9 skills as slash commands
+- `CLAUDE.md` guidance block
 
 ## How to use it
 
 Typical workflow:
 
-1. Run `rein init` in the repo you want to use with Codex.
-2. Start a new Codex session in that repo.
-3. Let `AGENTS.md` route work through `REIN.md`.
+1. Run `rein init` in the repo you want to use.
+2. Start a new Codex or Claude Code session in that repo.
+3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
 4. Use:
    - `rein-interview` for vague or underspecified work
    - `rein-inspect` for a durable repo map
@@ -76,7 +75,6 @@ Typical workflow:
 
 ## Notes
 
-- Current REIN is Codex-focused.
 - REIN is a workflow harness, not a benchmark or proof of superiority.
 
 ## License
