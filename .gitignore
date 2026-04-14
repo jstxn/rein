@@ -1,0 +1,4 @@
+.omx/
+.omc/
+.rein/*
+!.rein/.gitkeep
