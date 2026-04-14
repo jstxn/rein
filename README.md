@@ -7,7 +7,6 @@ This repo is no longer just a prompt file. It is a small harness that packages:
 - `REIN.md`: regulated execution and inference protocol
 - `VERIFY.md`: neutral matched control
 - Codex-local skills for deep interviewing, codebase inspection, triage, verification, retrospectives, and anti-slop cleanup
-- optional Codex hook scaffolding for future REIN experiments
 - a tiny eval layer with bounded, local scoring
 
 ## What v1 is
@@ -57,18 +56,18 @@ If you are working from this repository before publish, you can run:
 node bin/rein.js init
 ```
 
+`rein init` installs only from the REIN package's own bundled assets. It does not read skills or other REIN assets from `~/.codex` or any other external repo path.
+
+From a dev checkout, `node bin/rein.js init --repo . --force` refreshes this repo from its own bundled REIN assets in place.
+
 What `rein init` does:
 
 - copies `REIN.md` and `VERIFY.md` into the target repo
 - installs `.codex/skills/rein-*`
 - installs companion skills: `deep-interview`, `deep-inspect`, and `ai-slop-cleaner`
 - for repo installs, creates `.rein/` as the repo-local REIN artifact root for packaged skills, including `.rein/codebase/` for `deep-inspect`
-- installs `.codex/hooks.json` and REIN hook scaffolding when safe
 - creates a minimal `AGENTS.md` when the target has none
 - appends REIN guidance into an existing `AGENTS.md` when it is missing
-- writes a merge snippet instead of overwriting an existing `.codex/hooks.json`
-
-If the target already has an `.codex/hooks.json`, REIN leaves it alone by default and writes guidance under `.codex/rein-install/`.
 
 ## Day-One Workflow
 
@@ -101,13 +100,6 @@ Codex harness surfaces:
 - `.codex/skills/rein-triage/SKILL.md`
 - `.codex/skills/rein-verify/SKILL.md`
 - `.codex/skills/rein-retro/SKILL.md`
-- `.codex/hooks.json`
-- `.codex/hooks/rein_hook_utils.py`
-- `.codex/hooks/session_start_presence.py`
-- `.codex/hooks/user_prompt_submit.py`
-- `.codex/hooks/pre_bash_guard.py`
-- `.codex/hooks/post_bash_review.py`
-- `.codex/hooks/stop_require_evidence.py`
 
 Repo-local REIN artifact surfaces:
 
@@ -137,7 +129,6 @@ This repository uses the same repo-local surfaces that REIN installs elsewhere:
 
 - `AGENTS.md`
 - `REIN.md`
-- `.codex/hooks.json`
 - `.codex/skills/`
 - `.rein/`
 

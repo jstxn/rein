@@ -13,13 +13,6 @@
     "VERIFY.md",
     "AGENTS.md",
     ".codex/skills",
-    ".codex/hooks.json",
-    ".codex/hooks/rein_hook_utils.py",
-    ".codex/hooks/post_bash_review.py",
-    ".codex/hooks/pre_bash_guard.py",
-    ".codex/hooks/session_start_presence.py",
-    ".codex/hooks/stop_require_evidence.py",
-    ".codex/hooks/user_prompt_submit.py",
     "rein-evals",
     "scripts/install_codex_harness.sh",
     "README.md"

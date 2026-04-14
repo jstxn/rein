@@ -16,9 +16,6 @@ This directory is the entrypoint for navigating the REIN harness codebase.
 - [Skills](./skills.md)
   The repo-local Codex skills and the workflow they are meant to support.
 
-- [Hooks](./hooks.md)
-  The Python hook helpers and the currently present hook configuration.
-
 - [Evals And Artifacts](./evals-and-artifacts.md)
   The local eval layer, generated reports, research asset, and non-package working artifacts.
 
@@ -27,7 +24,7 @@ This directory is the entrypoint for navigating the REIN harness codebase.
 1. Start with [Architecture](./architecture.md) for the repo shape.
 2. Read [Protocols](./protocols.md) to understand what the harness is trying to enforce.
 3. Read [Installer And CLI](./installer-and-cli.md) to see how those surfaces are installed into another repo.
-4. Use [Skills](./skills.md) and [Hooks](./hooks.md) for runtime behavior.
+4. Use [Skills](./skills.md) for runtime behavior.
 5. Use [Evals And Artifacts](./evals-and-artifacts.md) for the comparison layer and repo-local working residue.
 
 ## Current Scope

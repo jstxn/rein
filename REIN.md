@@ -31,10 +31,32 @@ The framing is different from `VERIFY.md`. The rigor is not.
 REIN works best when the protocol is paired with the right Codex skills:
 
 - use `deep-interview` when the request is vague, broad, or missing boundaries
+- use `deep-inspect` when you need a durable map of the repo or subsystem before implementation
 - use `rein-triage` before ambiguous or multi-file work
 - use `ai-slop-cleaner` for cleanup, deslop, or refactor work after behavior is locked
 - use `rein-verify` before declaring completion
 - use `rein-retro` after misses, regressions, or suspicious shortcuts
+
+## REIN Artifacts
+
+REIN-managed durable artifacts belong under `.rein/`.
+
+- `deep-inspect` writes codebase inspection docs under `.rein/codebase/`
+- `deep-interview` writes clarification artifacts under `.rein/context/`, `.rein/interviews/`, and `.rein/specs/`
+
+If a REIN workflow creates durable repo-local outputs, prefer `.rein/` over ad hoc working directories.
+
+## Enforcement Model
+
+REIN works through:
+
+- this protocol document
+- companion skills
+- `AGENTS.md` routing
+
+The protocol in this document is the source of truth.
+
+Do not treat the absence of runtime enforcement as permission to skip the REIN evidence report or the rest of the protocol.
 
 ## Non-Negotiable Rules
 

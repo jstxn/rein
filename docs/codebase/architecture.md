@@ -20,7 +20,7 @@
 - The shipped runtime surfaces are the protocol docs (`REIN.md`, `VERIFY.md`), installer code (`bin/`, `lib/`), repo-local Codex assets (`.codex/`), and the local eval layer (`rein-evals/`).
 - `bin/rein.js` is the package entrypoint and hands off to `lib/cli.js`.
 - `lib/cli.js` copies the harness surfaces into either a target repo or the user-level `~/.codex` area.
-- `.codex/` contains the Codex-facing skills and hook scripts that the installer distributes.
+- `.codex/` contains the Codex-facing skills that the installer distributes.
 - `docs/codebase/` contains checked-in reference documentation for this repository itself.
 - `rein-evals/` contains a small local rubric-driven comparison layer between the REIN and VERIFY prompt surfaces.
 - `resources/` currently contains the research PDF tracked through Git LFS.
@@ -35,14 +35,14 @@
 
 ## Dependencies And Touchpoints
 - The package depends on Node 18+ for the installer and CLI runtime.
-- Python 3 is used for hook scripts and the eval utilities.
+- Python 3 is used for the eval utilities.
 - `README.md` explains the intended public shape of the repo.
-- `package.json` defines what will be included in a published package; it includes `.codex/` skills and hooks, but not `.rein/` or `.omc/`.
+- `package.json` defines what will be included in a published package; it includes `.codex/` skills, but not `.rein/` or `.omc/`.
 - `.gitattributes` routes `resources/fear_regulated_pressure_report.pdf` through Git LFS filters.
 - `docs/codebase/` is checked into this repo for orientation, but it is not the packaged output target of `deep-inspect`.
 
 ## Findings
-- Observed: The published package surface is narrow. `package.json` includes `bin`, `lib`, protocol docs, `.codex` skills and hooks, `rein-evals`, the install wrapper, and `README.md`.
+- Observed: The published package surface is narrow. `package.json` includes `bin`, `lib`, protocol docs, `.codex` skills, `rein-evals`, the install wrapper, and `README.md`.
 - Observed: `.rein/` is the intended root for REIN-managed planning/spec artifacts such as deep-interview outputs, but these paths are not listed in `package.json`.
 - Observed: `docs/codebase/` is a maintained documentation surface for this repository, separate from `.rein/codebase/` in installed target repos.
 - Observed: `.omc/` contains local memory and mission-state files and is not part of the published package.
