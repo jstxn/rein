@@ -1,0 +1,31 @@
+{
+  "name": "@jstxn/rein",
+  "version": "0.1.0",
+  "description": "REIN harness installer for Codex",
+  "type": "module",
+  "bin": {
+    "rein": "bin/rein.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "REIN.md",
+    "VERIFY.md",
+    "AGENTS.md",
+    ".codex/skills",
+    ".codex/hooks.json",
+    ".codex/hooks/rein_hook_utils.py",
+    ".codex/hooks/post_bash_review.py",
+    ".codex/hooks/pre_bash_guard.py",
+    ".codex/hooks/session_start_presence.py",
+    ".codex/hooks/stop_require_evidence.py",
+    ".codex/hooks/user_prompt_submit.py",
+    "rein-evals",
+    "scripts/install_codex_harness.sh",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
