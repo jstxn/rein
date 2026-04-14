@@ -28,16 +28,27 @@ rein init --repo /path/to/repo
 rein init --user
 ```
 
+Other commands:
+
+```bash
+rein status              # show what's installed and whether it's outdated
+rein update              # re-install REIN surfaces, replacing existing files
+rein eject               # remove all REIN surfaces from the repo
+```
+
 ## What `rein init` adds
 
 For a repo install, REIN adds:
 - `REIN.md`
 - `VERIFY.md`
 - `.codex/skills/` with:
-  - `deep-interview`
-  - `deep-inspect`
-  - `ai-slop-cleaner`
+  - `rein-interview`
+  - `rein-inspect`
+  - `rein-cleanup`
   - `rein-triage`
+  - `rein-plan`
+  - `rein-scope`
+  - `rein-diff-review`
   - `rein-verify`
   - `rein-retro`
 - `.rein/`
@@ -52,28 +63,20 @@ Typical workflow:
 2. Start a new Codex session in that repo.
 3. Let `AGENTS.md` route work through `REIN.md`.
 4. Use:
-   - `deep-interview` for vague or underspecified work
-   - `deep-inspect` for a durable repo map
+   - `rein-interview` for vague or underspecified work
+   - `rein-inspect` for a durable repo map
    - `rein-triage` before ambiguous or multi-file changes
-   - `ai-slop-cleaner` for cleanup/refactor work after behavior is locked
+   - `rein-plan` to break complex work into sequenced steps with checkpoints
+   - `rein-scope` when requirements are too large, conflicting, or need negotiation
+   - `rein-diff-review` to self-review your diff before committing
+   - `rein-cleanup` for cleanup/refactor work after behavior is locked
    - `rein-verify` before declaring completion
    - `rein-retro` after misses or suspicious shortcuts
-
-## Local development
-
-If you are working from this repo directly:
-
-```bash
-node bin/rein.js init --repo . --force
-```
-
-`rein init` installs only from REIN's own bundled package assets. It does not read REIN files from `~/.codex` or any other external repo path.
 
 ## Notes
 
 - Current REIN is Codex-focused.
 - REIN is a workflow harness, not a benchmark or proof of superiority.
-- The eval layer in `rein-evals/` is directional local evidence, not scientific proof.
 
 ## License
 

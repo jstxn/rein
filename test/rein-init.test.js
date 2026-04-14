@@ -22,8 +22,8 @@ test("rein init --repo creates .rein surfaces and installs .rein-based packaged 
 
   const reinDir = path.join(targetRepo, ".rein");
   const reinCodebaseDir = path.join(targetRepo, ".rein", "codebase");
-  const skillPath = path.join(targetRepo, ".codex", "skills", "deep-interview", "SKILL.md");
-  const inspectSkillPath = path.join(targetRepo, ".codex", "skills", "deep-inspect", "SKILL.md");
+  const skillPath = path.join(targetRepo, ".codex", "skills", "rein-interview", "SKILL.md");
+  const inspectSkillPath = path.join(targetRepo, ".codex", "skills", "rein-inspect", "SKILL.md");
   const agentsPath = path.join(targetRepo, "AGENTS.md");
   const skillBody = fs.readFileSync(skillPath, "utf8");
   const inspectSkillBody = fs.readFileSync(inspectSkillPath, "utf8");
@@ -37,8 +37,8 @@ test("rein init --repo creates .rein surfaces and installs .rein-based packaged 
   assert.match(inspectSkillBody, /\.rein\/codebase\//);
   assert.doesNotMatch(inspectSkillBody, /docs\/codebase\//);
   assert.match(agentsBody, /## REIN/);
-  assert.match(agentsBody, /deep-inspect/);
-  assert.match(agentsBody, /deep-interview/);
+  assert.match(agentsBody, /rein-inspect/);
+  assert.match(agentsBody, /rein-interview/);
   assert.match(agentsBody, /\.rein\/codebase\//);
   assert.match(agentsBody, /\.rein\/context\//);
   assert.match(agentsBody, /\.rein\/interviews\//);
@@ -61,7 +61,7 @@ test("rein init --repo . --force succeeds when reinstalling a dev checkout into 
     stdio: "pipe",
   });
 
-  const restoredSkillPath = path.join(sourceRepo, ".codex", "skills", "deep-interview", "SKILL.md");
+  const restoredSkillPath = path.join(sourceRepo, ".codex", "skills", "rein-interview", "SKILL.md");
   assert.ok(fs.existsSync(restoredSkillPath), "expected self-reinit to preserve bundled skills in place");
 });
 
@@ -75,7 +75,7 @@ test("rein init fails clearly when a bundled asset is missing", () => {
     filter: (src) => !src.includes(`${path.sep}.git${path.sep}`) && !src.endsWith(`${path.sep}.git`),
   });
   fs.mkdirSync(targetRepo, { recursive: true });
-  fs.rmSync(path.join(sourceRepo, ".codex", "skills", "deep-interview"), { recursive: true, force: true });
+  fs.rmSync(path.join(sourceRepo, ".codex", "skills", "rein-interview"), { recursive: true, force: true });
 
   const copiedCliPath = path.join(sourceRepo, "bin", "rein.js");
 
@@ -87,7 +87,7 @@ test("rein init fails clearly when a bundled asset is missing", () => {
       }),
     (error) => {
       assert.match(error.stderr.toString(), /REIN package is incomplete/);
-      assert.match(error.stderr.toString(), /\.codex\/skills\/deep-interview\/SKILL\.md/);
+      assert.match(error.stderr.toString(), /\.codex\/skills\/rein-interview\/SKILL\.md/);
       return true;
     },
   );

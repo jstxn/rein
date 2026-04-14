@@ -1,32 +1,24 @@
 ---
-name: ai-slop-cleaner
-description: Run an anti-slop cleanup/refactor/deslop workflow
+name: rein-cleanup
+description: Run a regression-tests-first cleanup/refactor workflow to reduce slop
 ---
 
-# AI Slop Cleaner Skill
+# rein-cleanup
 
-Reduce AI-generated slop with a regression-tests-first, smell-by-smell cleanup workflow that preserves behavior and raises signal quality.
+Reduce bloated, noisy, repetitive, or over-abstracted code with a regression-tests-first, smell-by-smell cleanup workflow that preserves behavior and raises signal quality.
 
 ## When to Use
 
 Use this skill when:
 - A code path works but feels bloated, noisy, repetitive, or over-abstracted
-- A user asks to "cleanup", "refactor", or "deslop" AI-generated output
+- A user asks to "cleanup", "refactor", or "deslop" output
 - Follow-up implementation left duplicate code, dead code, weak boundaries, missing tests, or unnecessary wrapper layers
 - You need a disciplined cleanup workflow without broad rewrites
 
-## GPT-5.4 Guidance Alignment
-
-- Keep outputs concise and evidence-dense unless risk or the user requests more detail.
-- Treat newer user instructions as local workflow updates without discarding earlier non-conflicting constraints.
-- Keep using inspection, tests, diagnostics, and verification until the cleanup is grounded.
-- Proceed automatically through clear, reversible cleanup steps; ask only when a choice materially changes scope or behavior.
-
-## Scoped File Lists and Ralph Workflow
+## Scoped File Lists
 
 - This skill can accept a file list scope instead of a whole feature area.
 - When the caller provides a changed-files list, keep the cleanup strictly bounded to those files.
-- In the Ralph workflow, the mandatory deslop pass should run this skill on Ralph's changed files only, in standard mode unless the caller explicitly requests otherwise.
 
 ## Procedure
 
@@ -76,8 +68,8 @@ Use this skill when:
 ## Output Format
 
 ```text
-AI SLOP CLEANUP REPORT
-======================
+CLEANUP REPORT
+==============
 
 Scope: [files or feature area]
 Behavior Lock: [targeted regression tests added or run]

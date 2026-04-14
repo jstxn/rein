@@ -13,8 +13,6 @@
     "VERIFY.md",
     "AGENTS.md",
     ".codex/skills",
-    "rein-evals",
-    "scripts/install_codex_harness.sh",
     "README.md"
   ],
   "engines": {

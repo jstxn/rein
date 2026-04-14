@@ -13,7 +13,7 @@
 - `REIN.md` is the regulated execution and inference profile. It frames the work as strict, calm, explicit, and anti-shortcut.
 - `VERIFY.md` is the matched neutral control. It keeps the same procedural contract while removing the regulated-pressure framing.
 - Both docs share the same staged workflow: read relevant files, verify assumptions, define success and cheating boundaries, run verification, and emit an evidence report.
-- `AGENTS.md` routes work in this repo through `REIN.md` and explicitly calls out when to use `deep-interview`, `rein-triage`, `ai-slop-cleaner`, and `rein-verify`.
+- `AGENTS.md` routes work in this repo through `REIN.md` and explicitly calls out when to use `rein-interview`, `rein-triage`, `rein-cleanup`, and `rein-verify`.
 - `README.md` positions REIN and VERIFY as procedurally matched surfaces whose main difference is motivational framing.
 
 ## Patterns And Conventions
@@ -30,5 +30,5 @@
 - Observed: `REIN.md` and `VERIFY.md` explicitly share the same procedural contract and differ mainly in framing.
 - Observed: `AGENTS.md` currently routes this repo through `REIN.md`, not `VERIFY.md`.
 - Observed: The protocol docs strongly forbid mutating tests or evaluators to hide defects and require a final evidence report.
-- Observed: `REIN.md` now calls out `deep-inspect` alongside the other packaged companion skills.
+- Observed: `REIN.md` now calls out `rein-inspect` alongside the other packaged companion skills.
 - Inferred risk: Because the protocol docs and AGENTS routing are manual text surfaces rather than generated from one central source, the named skill inventory can drift from the actual installed skill set over time.

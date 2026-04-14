@@ -1,42 +1,37 @@
 ---
-name: deep-interview
+name: rein-interview
 description: Socratic deep interview with mathematical ambiguity gating before execution
-argument-hint: "[--quick|--standard|--deep] [--autoresearch] <idea or vague description>"
+argument-hint: "[--quick|--standard|--deep] <idea or vague description>"
 ---
 
 <Purpose>
-Deep Interview is an intent-first Socratic clarification loop before planning or implementation. It turns vague ideas into execution-ready specifications by asking targeted questions about why the user wants a change, how far it should go, what should stay out of scope, and what REIN may decide without confirmation.
+rein-interview is an intent-first Socratic clarification loop before planning or implementation. It turns vague ideas into execution-ready specifications by asking targeted questions about why the user wants a change, how far it should go, what should stay out of scope, and what REIN may decide without confirmation.
 </Purpose>
 
 <Use_When>
 - The request is broad, ambiguous, or missing concrete acceptance criteria
-- The user says "deep interview", "interview me", "ask me everything", "don't assume", or "ouroboros"
+- The user says "interview me", "ask me everything", "don't assume"
 - The user wants to avoid misaligned implementation from underspecified requirements
-- You need a requirements artifact before handing off to `ralplan`, `autopilot`, `ralph`, or `team`
+- You need a requirements artifact before handing off to planning or implementation
 </Use_When>
 
 <Do_Not_Use_When>
 - The request already has concrete file/symbol targets and clear acceptance criteria
 - The user explicitly asks to skip planning/interview and execute immediately
-- The user asks for lightweight brainstorming only (use `plan` instead)
-- A complete PRD/plan already exists and execution should start
+- The user asks for lightweight brainstorming only
+- A complete plan already exists and execution should start
 </Do_Not_Use_When>
 
 <Why_This_Exists>
-Execution quality is usually bottlenecked by intent clarity, not just missing implementation detail. A single expansion pass often misses why the user wants a change, where the scope should stop, which tradeoffs are unacceptable, and which decisions still require user approval. This workflow applies Socratic pressure plus quantitative ambiguity scoring so orchestration modes begin with an explicit, testable, intent-aligned spec.
+Execution quality is usually bottlenecked by intent clarity, not just missing implementation detail. A single expansion pass often misses why the user wants a change, where the scope should stop, which tradeoffs are unacceptable, and which decisions still require user approval. This workflow applies Socratic pressure plus quantitative ambiguity scoring so work begins with an explicit, testable, intent-aligned spec.
 </Why_This_Exists>
 
 <Depth_Profiles>
-- Quick (`--quick`): fast pre-PRD pass; target threshold `<= 0.30`; max rounds 5
+- Quick (`--quick`): fast pre-spec pass; target threshold `<= 0.30`; max rounds 5
 - Standard (`--standard`, default): full requirement interview; target threshold `<= 0.20`; max rounds 12
 - Deep (`--deep`): high-rigor exploration; target threshold `<= 0.15`; max rounds 20
-- Autoresearch (`--autoresearch`): same interview rigor as Standard, but specialized for `omx autoresearch` launch readiness and `.rein/specs/` mission/sandbox artifact handoff
 
 If no flag is provided, use Standard.
-
-<Mode_Flags>
-- `--autoresearch`: switch the interview into autoresearch-intake mode for `omx autoresearch` handoff. In this mode, the interview should converge on a launch-ready research mission, write canonical artifacts under `.rein/specs/`, and preserve the explicit `refine further` versus `launch` boundary for downstream CLI intake.
-</Mode_Flags>
 </Depth_Profiles>
 
 <Execution_Policy>
@@ -46,9 +41,8 @@ If no flag is provided, use Standard.
 - Treat every answer as a claim to pressure-test before moving on
 - Do not rotate to a new clarity dimension just for coverage when the current answer is still vague
 - Before crystallizing, complete at least one explicit pressure pass that revisits an earlier answer with a deeper follow-up
-- Gather codebase facts via `explore` before asking user about internals
+- Gather codebase facts via exploration before asking user about internals
 - Prefer evidence-backed brownfield confirmation questions
-- In Codex CLI, prefer structured user-input tooling when available; otherwise use concise plain-text one-question turns
 - Re-score ambiguity after each answer and show progress transparently
 - Do not crystallize or hand off while Non-goals or Decision Boundaries remain unresolved
 </Execution_Policy>
@@ -153,7 +147,7 @@ Use each mode once when applicable:
 When threshold is met:
 
 1. Write interview transcript summary to `.rein/interviews/{slug}-{timestamp}.md`
-2. Write execution-ready spec to `.rein/specs/deep-interview-{slug}.md`
+2. Write execution-ready spec to `.rein/specs/rein-interview-{slug}.md`
 
 Spec should include:
 - metadata
@@ -174,13 +168,11 @@ Spec should include:
 ## Phase 5: Execution Bridge
 
 Present execution options:
-- `$ralplan`
-- `$autopilot`
-- `$ralph`
-- `$team`
+- proceed to planning
+- proceed to implementation
 - refine further
 
-Do not implement directly inside deep-interview.
+Do not implement directly inside rein-interview.
 </Steps>
 
 <Final_Checklist>

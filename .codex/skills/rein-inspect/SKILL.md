@@ -1,12 +1,12 @@
 ---
-name: deep-inspect
+name: rein-inspect
 description: Understand a codebase and maintain .rein/codebase/ as a navigable map with evidence-backed findings
 argument-hint: "[optional scope or subsystem]"
 ---
 
-# Deep Inspect
+# rein-inspect
 
-`deep-inspect` is a documentation-first reconnaissance skill. Its job is to understand a codebase carefully and maintain a durable map of that understanding under `.rein/codebase/`.
+`rein-inspect` is a documentation-first reconnaissance skill. Its job is to understand a codebase carefully and maintain a durable map of that understanding under `.rein/codebase/`.
 
 The skill produces:
 - `.rein/codebase/MAP.md`

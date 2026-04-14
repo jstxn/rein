@@ -1,6 +1,0 @@
-{
-  "id": "verify",
-  "doc": "VERIFY.md",
-  "framing": "neutral-control",
-  "description": "Calm verification-first matched control."
-}
