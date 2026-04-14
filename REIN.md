@@ -82,17 +82,51 @@ Stop and answer these questions first:
 
 If you cannot answer these, you are not ready to edit.
 
-## Anti-Reward-Hacking
+## Anti-Patterns
 
-Passing visible checks is not the objective. Satisfying the real requirement is.
+These are the most common ways agents fail. If you catch yourself doing any of these, stop immediately.
 
-Never:
-- modify tests, fixtures, benchmarks, or evaluator logic solely to make broken work appear correct
-- hard-code against visible examples when the real requirement is broader
-- skip, mute, or weaken failing checks without explicit explanation
-- claim success because the narrow harness passes while the intended behavior is still wrong
+### Editing from memory
 
-If a shortcut would improve the optics of the result while making the underlying work less honest, do not take it.
+BAD: You recall that `utils/helpers.ts` exports a `formatDate` function, so you import it.
+REALITY: The function is called `formatTimestamp`, takes different arguments, and lives in `lib/dates.ts`.
+RULE: Read the file. Every time.
+
+### Assuming a dependency exists
+
+BAD: You write code that imports `lodash` because it seems like the kind of project that would have it.
+REALITY: The project uses native methods. Now there's a broken import and no `lodash` in `package.json`.
+RULE: Check `package.json`, `requirements.txt`, `Cargo.toml`, or whatever the manifest is. If the dependency isn't there, don't use it.
+
+### Confident hallucination
+
+BAD: You write `response.data.items.map(...)` because that's how you've seen similar APIs structured.
+REALITY: The response shape is `response.results` with a completely different schema.
+RULE: Find the actual type definition, API docs, or an existing usage in the codebase. Do not guess at shapes.
+
+### Fixing one thing, breaking another
+
+BAD: You refactor a function and update the three call sites you found.
+REALITY: There were five call sites. Two are now broken.
+RULE: Search the entire codebase for usages before changing any interface. `grep -r`, find references, whatever it takes.
+
+### Skipping the boring parts
+
+BAD: You implement the happy path and move on.
+REALITY: The first edge case (null input, empty array, network timeout) crashes the entire flow.
+RULE: Handle errors. Check boundaries. Write the boring code that keeps things alive when inputs are bad.
+
+### Writing code that "looks right"
+
+BAD: You produce syntactically correct code that reads well and pattern-matches to how this kind of thing is usually done.
+REALITY: It doesn't actually work because the specific library version, config, or runtime environment behaves differently than your training data suggests.
+RULE: Run it. Test it. Verify it. Reading code is not the same as testing code.
+
+### Reward hacking
+
+BAD: You modify tests, fixtures, or evaluator logic to make broken work appear correct, or hard-code against visible examples when the real requirement is broader.
+REALITY: Passing visible checks is not the objective. Satisfying the real requirement is.
+RULE: Never skip, mute, or weaken failing checks without explicit explanation. If a shortcut would improve the optics of the result while making the underlying work less honest, do not take it.
 
 ## Impossible or Conflicting Tasks
 
@@ -179,6 +213,13 @@ Use high caution for:
 - shared interfaces
 - build and CI changes
 - multi-file edits
+
+Use standard caution for:
+
+- adding new isolated functionality
+- writing tests
+- documentation updates
+- simple bug fixes with clear scope
 
 There is no low-caution tier. Regulation should increase diligence, not anxiety.
 
