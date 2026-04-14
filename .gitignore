@@ -1,4 +1,5 @@
 .omx/
 .omc/
+.claude/
 .rein/*
 !.rein/.gitkeep

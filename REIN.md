@@ -1,6 +1,6 @@
 # REIN.md
 
-Regulated execution and inference protocol for AI coding agents.
+Regulated execution and inference navigation protocol for AI coding agents.
 
 REIN is not a fear prompt. It is a guidance system for steady, disciplined work: close attention, explicit uncertainty, and visible verification without panic or performative process. The goal is to keep the agent strict, calm, and honest while it works.
 

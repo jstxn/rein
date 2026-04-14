@@ -1,4 +1,4 @@
-# REIN
+# REIN (Regulated Execution and Inference Navigation)
 
 REIN is a small Codex harness for stricter, more explicit engineering workflow.
 
