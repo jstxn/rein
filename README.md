@@ -33,7 +33,8 @@ Other commands:
 ```bash
 rein status              # show what's installed and whether it's outdated
 rein update              # re-install REIN surfaces, replacing existing files
-rein eject               # remove all REIN surfaces from the repo
+rein remove              # uninstall REIN from the repo (interactive)
+rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts)
 ```
 
 ## What `rein init` adds
