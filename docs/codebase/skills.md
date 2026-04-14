@@ -31,11 +31,10 @@
 - `deep-interview` writes artifacts into `.rein/context/`, `.rein/interviews/`, and `.rein/specs/`.
 - `deep-inspect` writes artifacts into `.rein/codebase/`.
 - This repo's checked-in documentation under `docs/codebase/` is separate from packaged skill output and exists as repository reference material.
-- The hooks reinforce some of the same workflow edges, especially broad prompts, cleanup prompts, Bash mutations, and stop-time verification.
 
 ## Findings
 - Observed: The active repo-local skill files are `deep-interview`, `deep-inspect`, `rein-triage`, `rein-verify`, `rein-retro`, and `ai-slop-cleaner`.
-- Observed: The README and installer now include `deep-inspect`, but `REIN.md`’s companion-skills list still only names the older set.
+- Observed: `REIN.md`, `README.md`, and the installer now name `deep-inspect` alongside the other packaged skills.
 - Observed: `deep-interview` is the most artifact-heavy skill and persists state in `.rein/`.
 - Observed: `deep-inspect` is the only current packaged skill that explicitly generates maintained docs under `.rein/codebase/`.
 - Observed: `docs/codebase/` remains this repository's own checked-in documentation tree rather than the packaged output path for `deep-inspect`.
