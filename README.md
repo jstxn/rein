@@ -1,170 +1,79 @@
-# REIN Harness
+# REIN
 
-Codex-first harness for research-informed emotional-stimuli experiments in coding workflows.
+REIN is a small Codex harness for stricter, more explicit engineering workflow.
 
-This repo is no longer just a prompt file. It is a small harness that packages:
-
-- `REIN.md`: regulated execution and inference protocol
-- `VERIFY.md`: neutral matched control
-- Codex-local skills for deep interviewing, codebase inspection, triage, verification, retrospectives, and anti-slop cleanup
-- a tiny eval layer with bounded, local scoring
-
-## What v1 is
-
-REIN Harness v1 is a Codex-only augmentation layer for people who want:
-
-- more visible agent diligence
-- better uncertainty disclosure
-- stronger anti-reward-hacking behavior
-- a simple way to compare pressure framing against a neutral control
-
-## What v1 is not
-
-v1 is not:
-
-- Claude Code support
-- a dashboard or analytics UI
-- a benchmark platform
-- proof that REIN is always better than neutral prompting
+It adds:
+- `REIN.md` for regulated execution and inference guidance
+- `VERIFY.md` as a matched neutral control
+- packaged Codex skills for clarification, inspection, cleanup, triage, verification, and retrospection
+- `.rein/` as the repo-local artifact root for REIN-generated outputs
 
 ## Install
-
-Canonical install path:
 
 ```bash
 npm install -g @jstxn/rein
 rein init
 ```
 
-`rein init` opens an interactive installer with options for:
-
-- this repository
+Interactive install lets you target:
+- the current repository
 - another repository
-- user/global level
+- your user-level Codex setup
 
 Non-interactive examples:
 
 ```bash
 rein init --repo
-rein init --repo /path/to/target-repo
+rein init --repo /path/to/repo
 rein init --user
 ```
 
-If you are working from this repository before publish, you can run:
+## What `rein init` adds
 
-```bash
-node bin/rein.js init
-```
-
-`rein init` installs only from the REIN package's own bundled assets. It does not read skills or other REIN assets from `~/.codex` or any other external repo path.
-
-From a dev checkout, `node bin/rein.js init --repo . --force` refreshes this repo from its own bundled REIN assets in place.
-
-What `rein init` does:
-
-- copies `REIN.md` and `VERIFY.md` into the target repo
-- installs `.codex/skills/rein-*`
-- installs companion skills: `deep-interview`, `deep-inspect`, and `ai-slop-cleaner`
-- for repo installs, creates `.rein/` as the repo-local REIN artifact root for packaged skills, including `.rein/codebase/` for `deep-inspect`
-- creates a minimal `AGENTS.md` when the target has none
-- appends REIN guidance into an existing `AGENTS.md` when it is missing
-
-## Day-One Workflow
-
-Typical usage in a target repo:
-
-1. Install the harness.
-2. Let the target repo's `AGENTS.md` route work through `REIN.md`.
-3. Use `deep-interview` when the request is vague or missing boundaries.
-4. Use `rein-triage` before ambiguous or multi-file work.
-5. Use `ai-slop-cleaner` for cleanup, deslop, or refactor work after behavior is locked.
-6. Use `rein-verify` before declaring completion.
-7. Use `rein-retro` after misses, shortcuts, or suspicious failures.
-
-The goal is for users to see the harness at work, not just know it exists.
-
-## Repository Layout
-
-Root surfaces:
-
+For a repo install, REIN adds:
 - `REIN.md`
 - `VERIFY.md`
-- `AGENTS.md`
-- `README.md`
-
-Codex harness surfaces:
-
-- `.codex/skills/deep-interview/SKILL.md`
-- `.codex/skills/deep-inspect/SKILL.md`
-- `.codex/skills/ai-slop-cleaner/SKILL.md`
-- `.codex/skills/rein-triage/SKILL.md`
-- `.codex/skills/rein-verify/SKILL.md`
-- `.codex/skills/rein-retro/SKILL.md`
-
-Repo-local REIN artifact surfaces:
-
-- `.rein/context/`
-- `.rein/interviews/`
-- `.rein/specs/`
-- `.rein/codebase/`
-
-Checked-in reference docs for this repo:
-
-- `docs/codebase/`
-
-Eval surfaces:
-
-- `rein-evals/tasks/`
-- `rein-evals/prompts/`
-- `rein-evals/run.py`
-- `rein-evals/score.py`
-- `rein-evals/reports/`
-
-## Matched Controls
-`REIN.md` and `VERIFY.md` are meant to be procedurally matched.
-
-## Self-Hosting
-
-This repository uses the same repo-local surfaces that REIN installs elsewhere:
-
-- `AGENTS.md`
-- `REIN.md`
-- `.codex/skills/`
+- `.codex/skills/` with:
+  - `deep-interview`
+  - `deep-inspect`
+  - `ai-slop-cleaner`
+  - `rein-triage`
+  - `rein-verify`
+  - `rein-retro`
 - `.rein/`
+- `.rein/codebase/`
+- `AGENTS.md` guidance if missing, or a REIN block appended if not present
 
-That means REIN can help build itself without changing the user's normal `codex` entrypoint.
+## How to use it
 
-## Foundational Research
+Typical workflow:
 
-This project is also grounded in my own research work on regulated pressure, emotional stimuli, and coding-agent behavior.
+1. Run `rein init` in the repo you want to use with Codex.
+2. Start a new Codex session in that repo.
+3. Let `AGENTS.md` route work through `REIN.md`.
+4. Use:
+   - `deep-interview` for vague or underspecified work
+   - `deep-inspect` for a durable repo map
+   - `rein-triage` before ambiguous or multi-file changes
+   - `ai-slop-cleaner` for cleanup/refactor work after behavior is locked
+   - `rein-verify` before declaring completion
+   - `rein-retro` after misses or suspicious shortcuts
 
-- FEAR research report: [fear_regulated_pressure_report.pdf](./resources/fear_regulated_pressure_report.pdf)
-  This document directly informs the thought process, framing, and theory behind why this project exists and how REIN is being shaped as a regulated execution and inference protocol.
+## Local development
 
-## Research / References
+If you are working from this repo directly:
 
-They should share:
+```bash
+node bin/rein.js init --repo . --force
+```
 
-- the same task discipline
-- the same verification expectations
-- the same evidence report shape
-- the same anti-reward-hacking requirements
+`rein init` installs only from REIN's own bundled package assets. It does not read REIN files from `~/.codex` or any other external repo path.
 
-They should differ mainly in motivational framing.
+## Notes
 
-## Eval Philosophy
-
-The eval layer is intentionally small.
-
-It is there to support the product story and make comparisons easier, not to claim scientific proof. v1 reports should be described as directional evidence.
-
-## Research Boundary
-
-The design is inspired by recent work on emotion-like control variables in language models, but the implementation claim here is narrow:
-
-- regulated pressure may improve diligence and uncertainty disclosure
-- unregulated pressure may increase cheating-like behavior
-- matched controls are necessary to separate framing effects from process effects
+- Current REIN is Codex-focused.
+- REIN is a workflow harness, not a benchmark or proof of superiority.
+- The eval layer in `rein-evals/` is directional local evidence, not scientific proof.
 
 ## License
 
