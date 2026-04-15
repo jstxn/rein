@@ -1,3 +1,7 @@
+<p align="center">
+   <img src="https://i.ibb.co/tTg9bJgh/rein-no-star.png" alt="rein-no-star" border="0">
+</p>
+
 # REIN (Regulated Execution and Inference Navigation)
 
 REIN is a small harness for stricter, more explicit engineering workflow with Codex and Claude Code.
