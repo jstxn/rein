@@ -80,6 +80,11 @@ Typical workflow:
    - `rein-verify` before declaring completion
    - `rein-retro` after misses or suspicious shortcuts
 
+## Inspiration
+
+- [Fear-Regulated Pressure and Verification-First Prompting](resources/fear_regulated_pressure_report.pdf) -- the research paper behind REIN's protocol design
+- [andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) -- concise behavioral guidelines derived from Andrej Karpathy's observations on LLM coding pitfalls
+
 ## Notes
 
 - REIN is a workflow harness, not a benchmark or proof of superiority.
