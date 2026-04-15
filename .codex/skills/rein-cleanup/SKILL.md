@@ -32,6 +32,7 @@ Use this skill when:
    - Bound the pass to the requested files or scope
    - If a file list scope is provided, keep the pass restricted to that changed-files list
    - Order fixes from safest and highest-signal to riskiest
+   - Prefer deletion or local simplification before helper extraction
    - Do not start coding until the cleanup plan is explicit
 
 3. Categorize issues before editing
@@ -44,10 +45,12 @@ Use this skill when:
 4. Execute passes one smell at a time
    - Pass 1: dead code deletion
    - Pass 2: duplicate removal
+   - Before adding a helper or abstraction, confirm that deletion or local simplification is not enough
    - Pass 3: naming and error handling cleanup
    - Pass 4: test reinforcement
    - Re-run targeted verification after each pass
    - Avoid bundling unrelated refactors into the same edit set
+   - Do not use cleanup as permission for unrelated refactors or architectural rewrites
 
 5. Run quality gates
    - Regression tests stay green
@@ -56,7 +59,8 @@ Use this skill when:
    - Relevant unit and integration tests pass
    - Static or security scan passes when available
    - Diff stays minimal and scoped
-   - No new abstractions or dependencies unless explicitly required
+   - No new abstractions unless they remove repeated real complexity
+   - No new dependencies unless explicitly required
 
 6. Finish with an evidence-dense report
    - Changed files
