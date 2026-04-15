@@ -7,6 +7,8 @@ description: Use before committing. Self-reviews the current diff for unrelated 
 
 Use this after implementation and before committing to review your own diff for problems that verification commands alone will not catch.
 
+Treat every changed line as needing a clear path back to the user's request or to cleanup made necessary by your own change.
+
 ## When To Use
 
 - Before any commit that touches more than a trivial change
@@ -24,6 +26,7 @@ Use this after implementation and before committing to review your own diff for 
 2. For every changed file, verify you read it before editing it.
 3. Check for unrelated changes:
    - files modified that are not part of the task
+   - adjacent code or comments touched without task need
    - formatting-only changes in files you did not need to touch
    - import reordering or whitespace changes outside the task scope
 4. Check for debug leftovers:
@@ -37,10 +40,13 @@ Use this after implementation and before committing to review your own diff for 
    - new tests that only assert the happy path
 6. Check for scope drift:
    - refactors beyond what the task required
+   - speculative cleanup beyond the request
    - new abstractions or helpers for one-time use
    - feature additions not in the original scope
-7. If any issue is found, fix it before committing.
-8. If all checks pass, state what was reviewed and confirm the diff is clean.
+7. Apply the boundary rule:
+   - only clean up the mess created by this task unless the user explicitly asked for broader cleanup
+8. If any issue is found, fix it before committing.
+9. If all checks pass, state what was reviewed and confirm the diff is clean.
 
 ## Output
 

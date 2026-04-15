@@ -24,19 +24,23 @@ Use this after triage and before implementation when the work involves multiple 
 
 1. List every discrete subtask required to complete the work.
 2. Identify dependencies between subtasks. Order them so each step has its prerequisites satisfied.
-3. For each step, state:
+3. Write each step in `change -> verify` form.
+4. For each step, state:
    - what changes
+   - why this is the minimum sufficient change
+   - what must stay untouched
    - what could go wrong
    - how to verify the step succeeded before moving on
-4. Identify the first safe checkpoint — the earliest point where the repo is in a valid state and work can be paused or reviewed.
-5. Identify rollback boundaries — points where a partial revert is clean rather than destructive.
-6. Flag any step that requires a decision the user has not yet made.
+5. Reject speculative abstraction, flexibility, or helper extraction unless the plan explicitly justifies it.
+6. Identify the first safe checkpoint — the earliest point where the repo is in a valid state and work can be paused or reviewed.
+7. Identify rollback boundaries — points where a partial revert is clean rather than destructive.
+8. Flag any step that requires a decision the user has not yet made.
 
 ## Output
 
 Emit a plan with:
 
-- ordered step list with per-step risk and verification
+- ordered step list with per-step minimum-sufficient change, scope boundary, risk, and verification
 - dependency graph (if non-linear)
 - checkpoints
 - rollback boundaries
