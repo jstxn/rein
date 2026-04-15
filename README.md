@@ -4,7 +4,6 @@ REIN is a small harness for stricter, more explicit engineering workflow with Co
 
 It adds:
 - `REIN.md` for regulated execution and inference guidance
-- `VERIFY.md` as a matched neutral control
 - packaged skills for clarification, inspection, cleanup, triage, verification, and retrospection
 - `.rein/` as the repo-local artifact root for REIN-generated outputs
 
@@ -47,7 +46,6 @@ The `--codex` and `--claude` flags work with `status`, `update`, and `remove` to
 
 Shared surfaces (always installed):
 - `REIN.md`
-- `VERIFY.md`
 - `.rein/` and `.rein/codebase/`
 
 Codex surfaces (`--codex`, default):

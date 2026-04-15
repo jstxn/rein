@@ -139,10 +139,6 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
     fs.existsSync(path.join(targetRepo, "REIN.md")),
     "expected REIN.md",
   );
-  assert.ok(
-    fs.existsSync(path.join(targetRepo, "VERIFY.md")),
-    "expected VERIFY.md",
-  );
 
   assert.match(claudeBody, /## REIN/);
   assert.match(claudeBody, /rein-inspect/);
@@ -189,10 +185,6 @@ test("rein init --repo --codex --claude installs both surfaces", () => {
   assert.ok(
     fs.existsSync(path.join(targetRepo, "REIN.md")),
     "expected REIN.md",
-  );
-  assert.ok(
-    fs.existsSync(path.join(targetRepo, "VERIFY.md")),
-    "expected VERIFY.md",
   );
 
   assert.ok(
@@ -300,10 +292,6 @@ test("rein init --link creates linked installs and update/remove preserve the so
   assert.ok(
     isSymbolicLink(path.join(targetRepo, "REIN.md")),
     "expected linked REIN.md",
-  );
-  assert.ok(
-    isSymbolicLink(path.join(targetRepo, "VERIFY.md")),
-    "expected linked VERIFY.md",
   );
   assert.ok(
     isSymbolicLink(path.join(targetRepo, ".codex", "skills", "rein-interview")),
