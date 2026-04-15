@@ -48,17 +48,24 @@ The `--codex` and `--claude` flags work with `status`, `update`, and `remove` to
 
 ## What `rein init` adds
 
-Shared surfaces (always installed):
-- `REIN.md`
-- `.rein/` and `.rein/codebase/`
+| Surface | Codex (`--codex`, default) | Claude Code (`--claude`) |
+|---|---|---|
+| Protocol doc | `REIN.md` | `REIN.md` |
+| Artifact root | `.rein/`, `.rein/codebase/` | `.rein/`, `.rein/codebase/` |
+| Skills | `.codex/skills/` | `.claude/commands/` |
+| Guidance block | `AGENTS.md` | `CLAUDE.md` |
 
-Codex surfaces (`--codex`, default):
-- `.codex/skills/` with: `rein-interview`, `rein-inspect`, `rein-cleanup`, `rein-triage`, `rein-plan`, `rein-scope`, `rein-diff-review`, `rein-verify`, `rein-retro`
-- `AGENTS.md` guidance block
+Both targets install the same 9 skills:
 
-Claude Code surfaces (`--claude`):
-- `.claude/commands/` with the same 9 skills as slash commands
-- `CLAUDE.md` guidance block
+- `rein-interview`
+- `rein-inspect`
+- `rein-triage`
+- `rein-plan`
+- `rein-scope`
+- `rein-diff-review`
+- `rein-cleanup`
+- `rein-verify`
+- `rein-retro`
 
 By default, `rein init` copies these surfaces into the target. With `--link`, REIN symlinks the packaged docs and skills instead, while still writing repo- or user-specific guidance files normally.
 
