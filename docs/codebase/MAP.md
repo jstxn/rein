@@ -8,7 +8,7 @@ This directory is the entrypoint for navigating the REIN harness codebase.
   Overall repo shape, shipped surfaces, hidden working artifacts, and how the major parts relate.
 
 - [Protocols](./protocols.md)
-  The behavior contracts in `REIN.md`, `VERIFY.md`, and `AGENTS.md`.
+  The behavior contracts in `REIN.md` and `AGENTS.md`/`CLAUDE.md`.
 
 - [Installer And CLI](./installer-and-cli.md)
   The publishable Node entrypoint, installer logic, and legacy shell wrapper.

@@ -16,7 +16,7 @@
 
 ## How It Works
 - The repo is centered on a small publishable Node package that installs repo-local Codex guidance into another repository.
-- The shipped runtime surfaces are the protocol docs (`REIN.md`, `VERIFY.md`), installer code (`bin/`, `lib/`), and repo-local Codex assets (`.codex/`).
+- The shipped runtime surfaces are the protocol doc (`REIN.md`), installer code (`bin/`, `lib/`), and repo-local Codex/Claude assets (`.codex/`, `.claude/`).
 - `bin/rein.js` is the package entrypoint and hands off to `lib/cli.js`.
 - `lib/cli.js` copies the harness surfaces into either a target repo or the user-level `~/.codex` area.
 - `.codex/` contains the Codex-facing skills that the installer distributes.

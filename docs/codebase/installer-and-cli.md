@@ -15,7 +15,7 @@
   - `init` — copies protocol docs, skills, and AGENTS.md guidance into a target repo or user-level `~/.codex` area. Preserves existing files unless `--force` is used.
   - `status` — reports installed version, present/missing surfaces, and skill inventory.
   - `update` — re-installs all REIN surfaces with force, replacing existing files.
-  - `eject` — removes REIN.md, VERIFY.md, all REIN skills, install notes, and the REIN block from AGENTS.md. Preserves `.rein/` since it may contain work artifacts.
+  - `remove` — removes REIN.md, all REIN skills, install notes, and the REIN block from AGENTS.md/CLAUDE.md. Preserves `.rein/` since it may contain work artifacts.
 - AGENTS.md handling is idempotent: if a REIN block (delimited by HTML comment markers) already exists, it is replaced in place rather than duplicated.
 - Install notes include the installed version for drift detection by `status`.
 
@@ -28,7 +28,7 @@
 ## Dependencies And Touchpoints
 - `package.json` requires Node `>=18`.
 - `lib/cli.js` depends on the repository layout staying stable because it copies files by known relative paths from `REPO_ROOT`.
-- The CLI depends on `.codex/skills/`, `REIN.md`, and `VERIFY.md` being present in the source repo.
+- The CLI depends on `.codex/skills/`, `.claude/commands/`, and `REIN.md` being present in the source repo.
 - The installer writes repo guidance into `AGENTS.md` and install notes into `.codex/rein-install/` in target repos.
 
 ## Findings
