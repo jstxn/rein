@@ -29,6 +29,7 @@ Non-interactive examples:
 rein init --repo                        # default (Codex)
 rein init --repo --claude               # Claude Code only
 rein init --repo --codex --claude       # both
+rein init --repo --link                 # advanced: symlink packaged assets instead of copying
 rein init --repo /path/to/repo --claude
 rein init --user --claude
 ```
@@ -44,6 +45,8 @@ rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts
 
 The `--codex` and `--claude` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.
 
+`rein init --link` and `rein update --link` are advanced options for users who want linked installs. Linked installs update from one source checkout, but they depend on that source path continuing to exist.
+
 ## What `rein init` adds
 
 Shared surfaces (always installed):
@@ -58,6 +61,8 @@ Codex surfaces (`--codex`, default):
 Claude Code surfaces (`--claude`):
 - `.claude/commands/` with the same 9 skills as slash commands
 - `CLAUDE.md` guidance block
+
+By default, `rein init` copies these surfaces into the target. With `--link`, REIN symlinks the packaged docs and skills instead, while still writing repo- or user-specific guidance files normally.
 
 ## How to use it
 
