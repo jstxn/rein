@@ -1,187 +1,190 @@
 ---
 name: rein-interview
-description: Socratic deep interview with mathematical ambiguity gating before execution
-argument-hint: "[--quick|--standard|--deep] <idea or vague description>"
+description: Runtime-backed Socratic interview with durable state, clarity scoring, and spec bundle output
+argument-hint: "[--quick|--standard|--deep] [--resume <slug>] <idea or vague description>"
 ---
 
 <Purpose>
-rein-interview is an intent-first Socratic clarification loop before planning or implementation. It turns vague ideas into execution-ready specifications by asking targeted questions about why the user wants a change, how far it should go, what should stay out of scope, and what REIN may decide without confirmation.
+rein-interview is the requirements-clarification entry point for REIN when a task is vague, broad, or missing boundaries. It runs a Socratic interview while delegating all persistence, scoring, readiness gates, status reporting, and artifact writing to the `rein interview` runtime commands.
 </Purpose>
 
 <Use_When>
-- The request is broad, ambiguous, or missing concrete acceptance criteria
-- The user says "interview me", "ask me everything", "don't assume"
-- The user wants to avoid misaligned implementation from underspecified requirements
-- You need a requirements artifact before handing off to planning or implementation
+- The request is underspecified, risky, or likely to cause misaligned implementation
+- The user wants clarification before planning or coding
+- You need durable interview state, resumability, or machine-readable handoff artifacts
+- You need a spec bundle that can feed `rein-plan`, direct implementation, or further refinement
 </Use_When>
 
 <Do_Not_Use_When>
-- The request already has concrete file/symbol targets and clear acceptance criteria
-- The user explicitly asks to skip planning/interview and execute immediately
-- The user asks for lightweight brainstorming only
-- A complete plan already exists and execution should start
+- The request already has concrete file targets and stable acceptance criteria
+- The user explicitly asks to skip clarification and execute immediately
+- A complete rein-interview spec already exists and the next step should begin
 </Do_Not_Use_When>
 
-<Why_This_Exists>
-Execution quality is usually bottlenecked by intent clarity, not just missing implementation detail. A single expansion pass often misses why the user wants a change, where the scope should stop, which tradeoffs are unacceptable, and which decisions still require user approval. This workflow applies Socratic pressure plus quantitative ambiguity scoring so work begins with an explicit, testable, intent-aligned spec.
-</Why_This_Exists>
+<Profiles>
+- `--quick`: threshold `70%`, max rounds `5`
+- `--standard` (default): threshold `80%`, max rounds `12`
+- `--deep`: threshold `90%`, max rounds `20`
+</Profiles>
 
-<Depth_Profiles>
-- Quick (`--quick`): fast pre-spec pass; target threshold `<= 0.30`; max rounds 5
-- Standard (`--standard`, default): full requirement interview; target threshold `<= 0.20`; max rounds 12
-- Deep (`--deep`): high-rigor exploration; target threshold `<= 0.15`; max rounds 20
+<Runtime_Contract>
+The runtime owns:
+- durable state under `.rein/state/`
+- context snapshots under `.rein/context/`
+- clarity score computation
+- readiness gates
+- round ordering
+- status display
+- transcript/spec/result bundle output
 
-If no flag is provided, use Standard.
-</Depth_Profiles>
+You own:
+- asking the next question
+- interpreting the user's answer
+- deciding the next target dimension
+- producing the final structured summary payload for crystallization
+</Runtime_Contract>
 
 <Execution_Policy>
 - Ask one question per round, never batch
-- Ask about intent and boundaries before implementation detail
-- Target the weakest clarity dimension each round after applying the stage-priority rules below
-- Treat every answer as a claim to pressure-test before moving on
-- Do not rotate to a new clarity dimension just for coverage when the current answer is still vague
-- Before crystallizing, complete at least one explicit pressure pass that revisits an earlier answer with a deeper follow-up
-- Gather codebase facts via exploration before asking user about internals
-- Prefer evidence-backed brownfield confirmation questions
-- Re-score ambiguity after each answer and show progress transparently
-- Do not crystallize or hand off while Non-goals or Decision Boundaries remain unresolved
+- Stay intent-first until scope, non-goals, and decision boundaries are explicit
+- Use runtime state at every transition point; do not keep the authoritative interview state only in prose
+- Show the user current clarity progress after each runtime update
+- Do not crystallize until threshold and readiness gates are satisfied, unless the user explicitly accepts the risk
+- Do not implement directly inside rein-interview
 </Execution_Policy>
 
-<Steps>
+<Command_Sequence>
 
-## Phase 0: Preflight Context Intake
+## Start a new interview
 
-1. Parse the task and derive a short task slug.
-2. Attempt to load the latest relevant context snapshot from `.rein/context/{slug}-*.md`.
-3. If no snapshot exists, create a minimum context snapshot with:
-   - task statement
-   - desired outcome
-   - stated solution
-   - probable intent hypothesis
-   - known facts and evidence
-   - constraints
-   - unknowns and open questions
-   - decision-boundary unknowns
-   - likely codebase touchpoints
-4. Save the snapshot under `.rein/context/`.
+1. Parse arguments:
+   - if `--resume <slug>` is present, skip to the resume flow
+   - otherwise choose profile from `--quick|--standard|--deep` or default to `standard`
+2. Initialize runtime state:
 
-## Phase 1: Initialize
-
-1. Parse the depth profile.
-2. Detect project context: brownfield or greenfield.
-3. Initialize interview state with:
-   - profile
-   - initial idea
-   - rounds
-   - current ambiguity
-   - threshold
-   - max rounds
-   - current stage
-   - current focus
-   - context snapshot path
-4. Announce kickoff with profile, threshold, and current ambiguity.
-
-## Phase 2: Socratic Interview Loop
-
-Repeat until ambiguity is below threshold, the pressure pass is complete, readiness gates are explicit, the user exits with warning, or max rounds are reached.
-
-### 2a) Generate the next question
-
-Target the lowest-scoring dimension, but respect stage priority:
-- Stage 1: intent, outcome, scope, non-goals, decision boundaries
-- Stage 2: constraints, success criteria
-- Stage 3: brownfield grounding
-
-Follow-up pressure ladder:
-1. Ask for a concrete example or evidence signal behind the latest claim
-2. Probe the hidden assumption that makes the claim true
-3. Force a boundary or tradeoff
-4. If the answer still describes symptoms, reframe toward root cause
-
-### 2b) Ask the question
-
-Use the structure:
-
-```text
-Round {n} | Target: {weakest_dimension} | Ambiguity: {score}%
-
-{question}
+```bash
+rein interview init --profile <quick|standard|deep> --idea "<idea>" [--slug <slug>] --json
 ```
 
-### 2c) Score ambiguity
+3. Read the returned state and begin the interview.
 
-Greenfield:
-`ambiguity = 1 - (intent x 0.30 + outcome x 0.25 + scope x 0.20 + constraints x 0.15 + success x 0.10)`
+## Resume an existing interview
 
-Brownfield:
-`ambiguity = 1 - (intent x 0.25 + outcome x 0.20 + scope x 0.20 + constraints x 0.15 + success x 0.10 + context x 0.10)`
+1. Load the runtime state:
 
-Readiness gate:
-- Non-goals must be explicit
-- Decision Boundaries must be explicit
-- A pressure pass must be complete
+```bash
+rein interview resume --slug <slug> --json
+```
 
-### 2d) Report progress
+2. Continue from the returned `currentRound`, `readinessGates`, `weakestDimension`, and `nextAction`.
+   Valid `nextAction` values are:
+   - `continue`
+   - `crystallize`
+   - `blocked`
+   - `completed`
 
-Show the weighted breakdown, readiness-gate status, and next focus dimension.
+## Persist each round
 
-### 2e) Persist state
+After each answer, compute updated dimension scores and readiness gates, then call:
 
-Append the round result and updated scores.
+```bash
+rein interview update-round \
+  --slug <slug> \
+  --round <n> \
+  --target <dimension> \
+  --question "<question>" \
+  --answer "<answer>" \
+  --scores '{"intent":0.8,"outcome":0.7,"scope":0.6,"constraints":0.7,"success":0.5,"context":0.7}' \
+  [--refinement "<summary>"] \
+  [--challenge-mode "<contrarian|simplifier|ontologist>"] \
+  [--decision-summary "<short note>"] \
+  [--non-goals-explicit] \
+  [--decision-boundaries-explicit] \
+  [--pressure-pass-complete] \
+  --json
+```
 
-### 2f) Round controls
+Use brownfield dimensions (`intent`, `outcome`, `scope`, `constraints`, `success`, `context`) unless the interview was initialized as greenfield.
 
-- Do not offer early exit before at least one explicit assumption probe and one persistent follow-up
-- Round 4 and later: allow explicit early exit with risk warning
-- Hard cap at profile max rounds
+Immediately use the returned JSON to decide whether to:
+- continue interviewing
+- crystallize now
+- stop and warn that the interview is blocked
 
-## Phase 3: Challenge Modes
+## Check live status
 
-Use each mode once when applicable:
-- Contrarian
-- Simplifier
-- Ontologist
+At any time, or when you need a refreshed external view, call:
 
-## Phase 4: Crystallize Artifacts
+```bash
+rein interview status --slug <slug> --json
+```
 
-When threshold is met:
+If the user asks to continue later, tell them they can rerun:
 
-1. Write interview transcript summary to `.rein/interviews/{slug}-{timestamp}.md`
-2. Write execution-ready spec to `.rein/specs/rein-interview-{slug}.md`
+```bash
+rein interview resume --slug <slug> --json
+```
 
-Spec should include:
-- metadata
-- context snapshot reference
-- clarity breakdown
-- intent
-- desired outcome
-- in-scope
-- out-of-scope
-- decision boundaries
-- constraints
-- testable acceptance criteria
-- assumptions exposed and resolutions
-- pressure-pass findings
-- technical context findings
-- transcript summary
+## Crystallize artifacts
 
-## Phase 5: Execution Bridge
+When the runtime says `nextAction=crystallize`, build a structured summary JSON with at least:
+- `title`
+- `intent`
+- `desiredOutcome`
+- `inScope`
+- `outOfScope`
+- `decisionBoundaries`
+- `constraints`
+- `acceptanceCriteria`
+- `assumptions`
+- `pressureFindings`
+- `technicalContext`
+- `executionBridge`
+- `transcriptSummary`
 
-Present execution options:
-- proceed to planning
-- proceed to implementation
-- refine further
+Then call:
 
-Do not implement directly inside rein-interview.
-</Steps>
+```bash
+rein interview crystallize --slug <slug> --summary '<json>' --json
+```
 
-<Final_Checklist>
-- Context snapshot exists under `.rein/context/`
-- Ambiguity score shown each round
-- Intent-first stage priority used before implementation detail
-- At least one explicit assumption probe happened before crystallization
-- At least one persistent follow-up deepened a prior answer
-- Transcript written under `.rein/interviews/`
-- Spec written under `.rein/specs/`
-- No direct implementation performed in this mode
-</Final_Checklist>
+This writes:
+- transcript: `.rein/interviews/<slug>-<timestamp>.md`
+- spec bundle:
+  - `.rein/specs/rein-interview-<slug>/spec.md`
+  - `.rein/specs/rein-interview-<slug>/result.json`
+</Command_Sequence>
+
+<Interview_Strategy>
+- Prioritize the weakest dimension, but do not rotate dimensions just for coverage if the current answer is still vague
+- Use concrete-example pressure before abstract architecture questions
+- Make non-goals explicit early
+- Make decision boundaries explicit before handoff
+- Perform at least one genuine pressure pass on an earlier answer
+- Use challenge modes when they materially sharpen the spec:
+  - contrarian
+  - simplifier
+  - ontologist
+</Interview_Strategy>
+
+<Final_Output>
+When crystallization succeeds:
+- tell the user the final clarity score and readiness status
+- point to the transcript and spec bundle paths
+- recommend the next execution bridge:
+  - `rein-plan`
+  - direct implementation
+  - further refinement
+</Final_Output>
+
+<Checklist>
+- runtime state initialized or resumed
+- each round persisted through `rein interview update-round`
+- clarity shown as understanding progress, not ambiguity
+- readiness gates explicit before crystallization
+- transcript written
+- spec bundle written
+- no direct implementation performed here
+</Checklist>
+
+Task: {{ARGUMENTS}}
