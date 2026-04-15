@@ -77,6 +77,15 @@ test("rein interview end-to-end flow writes state, status, resume, and spec bund
   assert.equal(liveStatus.slug, initState.slug);
   assert.equal(liveStatus.currentRound, 1);
 
+  const nextAfterRoundOne = parseJson(
+    runCli(cliPath, ["interview", "next", "--slug", initState.slug, "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+  assert.equal(nextAfterRoundOne.suggestedMode, "continue");
+  assert.equal(nextAfterRoundOne.suggestedFocus, "nonGoalsExplicit");
+  assert.equal(nextAfterRoundOne.questionStrategy, "boundary-setting");
+
   const roundTwo = parseJson(
     runCli(
       cliPath,
@@ -139,6 +148,27 @@ test("rein interview end-to-end flow writes state, status, resume, and spec bund
   const resultJson = JSON.parse(fs.readFileSync(crystallized.artifactPaths.result, "utf8"));
   assert.equal(resultJson.intent, "Make rein-interview production-grade and resumable");
   assert.match(fs.readFileSync(crystallized.artifactPaths.spec, "utf8"), /## Desired Outcome/);
+
+  const nextAfterCompletion = parseJson(
+    runCli(cliPath, ["interview", "next", "--slug", initState.slug, "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+  assert.equal(nextAfterCompletion.suggestedMode, "handoff");
+  assert.equal(nextAfterCompletion.suggestedFocus, "plan");
+  assert.match(nextAfterCompletion.recommendedCommand, /rein interview handoff/);
+
+  const handoff = parseJson(
+    runCli(
+      cliPath,
+      ["interview", "handoff", "--slug", initState.slug, "--to", "plan", "--json"],
+      { cwd: targetRepo },
+    ),
+  );
+  assert.equal(handoff.handoffTarget, "plan");
+  assert.equal(handoff.recommendedSkill, "rein-plan");
+  assert.equal(handoff.recommendedSkillInvocation, `rein-plan --from-interview ${initState.slug}`);
+  assert.equal(handoff.sourceResult, crystallized.artifactPaths.result);
 });
 
 test("rein interview enforces round ordering and crystallization readiness", () => {
@@ -220,6 +250,31 @@ test("rein interview enforces round ordering and crystallization readiness", () 
       return true;
     },
   );
+
+  assert.throws(
+    () =>
+      runCli(
+        cliPath,
+        [
+          "interview",
+          "crystallize",
+          "--slug",
+          initState.slug,
+          "--force",
+          "--summary",
+          '{"intent":"x","desiredOutcome":"y","transcriptSummary":"z"}',
+        ],
+        { cwd: targetRepo },
+      ),
+    (error) => {
+      const message = error.stderr.toString().replace(/\s+/g, " ");
+      assert.match(
+        message,
+        /must include non-empty fields: acceptanceCriteria, constraints, decisionBoundaries, executionBridge, inScope, outOfScope, technicalContext/,
+      );
+      return true;
+    },
+  );
 });
 
 test("rein interview resume can select a slug interactively when omitted", () => {
@@ -253,6 +308,96 @@ test("rein interview resume can select a slug interactively when omitted", () =>
   assert.notEqual(selected.slug, first.slug);
 });
 
+test("rein interview handoff normalizes non-canonical execution bridge labels", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-handoff-aliases-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  const initState = parseJson(
+    runCli(cliPath, ["interview", "init", "--idea", "Alias bridge", "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "update-round",
+      "--slug",
+      initState.slug,
+      "--round",
+      "1",
+      "--target",
+      "intent",
+      "--question",
+      "Why now?",
+      "--answer",
+      "We need orchestration helpers.",
+      "--scores",
+      '{"intent":0.95,"outcome":0.95,"scope":0.9,"constraints":0.9,"success":0.9,"context":0.9}',
+      "--non-goals-explicit",
+      "--decision-boundaries-explicit",
+      "--pressure-pass-complete",
+      "--json",
+    ],
+    { cwd: targetRepo },
+  );
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "crystallize",
+      "--slug",
+      initState.slug,
+      "--summary",
+      JSON.stringify({
+        acceptanceCriteria: ["A handoff target is recommended"],
+        assumptions: [],
+        constraints: ["Stay file-based"],
+        decisionBoundaries: ["Internal command naming can evolve"],
+        desiredOutcome: "A canonical handoff recommendation",
+        executionBridge: ["direct implementation", "further refinement"],
+        inScope: ["Interview orchestration"],
+        intent: "Normalize bridge labels before handoff",
+        outOfScope: ["Plugin execution"],
+        pressureFindings: [],
+        technicalContext: ["Execution bridge is free-form input"],
+        transcriptSummary: "Alias labels should normalize cleanly.",
+      }),
+      "--json",
+    ],
+    { cwd: targetRepo },
+  );
+
+  const next = parseJson(
+    runCli(cliPath, ["interview", "next", "--slug", initState.slug, "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+  assert.equal(next.suggestedFocus, "implementation");
+  assert.match(next.recommendedCommand, /--to implementation --json/);
+
+  const handoff = parseJson(
+    runCli(
+      cliPath,
+      [
+        "interview",
+        "handoff",
+        "--slug",
+        initState.slug,
+        "--to",
+        "direct implementation",
+        "--json",
+      ],
+      { cwd: targetRepo },
+    ),
+  );
+  assert.equal(handoff.handoffTarget, "implementation");
+  assert.equal(handoff.recommendedSkill, "implementation");
+});
+
 test("rein-interview Claude and Codex prompt copies stay in sync", () => {
   const claude = fs.readFileSync(
     path.join(repoRoot, ".claude", "commands", "rein-interview.md"),
@@ -265,10 +410,13 @@ test("rein-interview Claude and Codex prompt copies stay in sync", () => {
 
   assert.equal(codex, claude);
   assert.match(claude, /rein interview update-round/);
+  assert.match(claude, /rein interview next --slug <slug> --json/);
+  assert.match(claude, /rein interview handoff --slug <slug> --to plan --json/);
   assert.match(claude, /rein interview init .*--json/);
   assert.match(claude, /rein interview resume --slug <slug> --json/);
   assert.match(claude, /rein interview status --slug <slug> --json/);
   assert.match(claude, /rein interview crystallize --slug <slug> --summary '<json>' --json/);
+  assert.match(claude, /Use canonical `executionBridge` values/);
   assert.match(claude, /- `completed`/);
   assert.match(claude, /Task: \{\{ARGUMENTS\}\}/);
 });

@@ -1,6 +1,7 @@
 ---
 name: rein-plan
-description: Use after triage, before implementation. Breaks complex work into sequenced steps with risks, checkpoints, and rollback boundaries.
+description: Use after triage, before implementation. Breaks complex work into sequenced steps with risks, checkpoints, rollback boundaries, and interview-result handoff support.
+argument-hint: "[--from-interview <slug|path>] <task or implementation target>"
 ---
 
 # rein-plan
@@ -13,6 +14,7 @@ Use this after triage and before implementation when the work involves multiple 
 - The execution order matters (migrations before code, types before consumers)
 - There are dependencies between subtasks
 - The risk of a partial implementation is high
+- A completed `rein-interview` spec bundle already exists and should drive the plan
 
 ## When Not To Use
 
@@ -20,25 +22,52 @@ Use this after triage and before implementation when the work involves multiple 
 - Triage already produced a clear, linear path
 - The user explicitly asks to skip planning
 
+## Interview Handoff
+
+Before planning, check whether there is a completed `rein-interview` artifact to consume.
+
+Artifact priority:
+1. If the user provides `--from-interview <slug|path>`, use that artifact.
+2. If the user provides or references a `rein interview handoff --to plan` result, use its `sourceResult` and `recommendedSkillInvocation`.
+3. Otherwise, look under `.rein/specs/` for `rein-interview-*/result.json`.
+4. If one clearly matches the current task, use it.
+5. If several plausible artifacts exist, prefer the most recent completed one whose `intent`, `desiredOutcome`, or `inScope` matches the task.
+6. If no relevant artifact exists, proceed with normal planning.
+
+When a `result.json` artifact is available:
+- treat it as the primary source of truth for intent, desired outcome, in-scope, out-of-scope, constraints, acceptance criteria, assumptions, technical context, and execution bridge
+- use `spec.md` or the transcript only if `result.json` is insufficient
+- do not silently drift away from the artifact without naming the conflict
+- if the live repo facts conflict with the artifact, call out the mismatch in the plan
+- if the artifact is missing core planning fields, stop and report that the interview bundle is incomplete rather than planning from a hollow result
+
 ## Steps
 
-1. List every discrete subtask required to complete the work.
-2. Identify dependencies between subtasks. Order them so each step has its prerequisites satisfied.
-3. For each step, state:
+1. Load the relevant `rein-interview` `result.json` first when available.
+2. List every discrete subtask required to complete the work.
+3. Identify dependencies between subtasks. Order them so each step has its prerequisites satisfied.
+4. Write each step in `change -> verify` form.
+5. For each step, state:
    - what changes
+   - why this is the minimum sufficient change
+   - what must stay untouched
    - what could go wrong
    - how to verify the step succeeded before moving on
-4. Identify the first safe checkpoint — the earliest point where the repo is in a valid state and work can be paused or reviewed.
-5. Identify rollback boundaries — points where a partial revert is clean rather than destructive.
-6. Flag any step that requires a decision the user has not yet made.
+6. Reject speculative abstraction, flexibility, or helper extraction unless the plan explicitly justifies it.
+7. Identify the first safe checkpoint — the earliest point where the repo is in a valid state and work can be paused or reviewed.
+8. Identify rollback boundaries — points where a partial revert is clean rather than destructive.
+9. Flag any step that requires a decision the user has not yet made.
 
 ## Output
 
 Emit a plan with:
 
-- ordered step list with per-step risk and verification
+- ordered step list with per-step minimum-sufficient change, scope boundary, risk, and verification
 - dependency graph (if non-linear)
 - checkpoints
 - rollback boundaries
 - open decisions requiring user input
 - estimated blast radius (files touched, APIs changed, tests affected)
+- when an interview artifact was used, a short note naming the `result.json` input and the key handoff fields consumed
+
+Task: {{ARGUMENTS}}

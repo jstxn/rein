@@ -41,6 +41,7 @@ You own:
 - asking the next question
 - interpreting the user's answer
 - deciding the next target dimension
+- framing the next question in your own judgment and voice
 - producing the final structured summary payload for crystallization
 </Runtime_Contract>
 
@@ -51,6 +52,7 @@ You own:
 - Show the user current clarity progress after each runtime update
 - Do not crystallize until threshold and readiness gates are satisfied, unless the user explicitly accepts the risk
 - Do not implement directly inside rein-interview
+- Use runtime suggestions for structure, but choose the actual next question yourself
 </Execution_Policy>
 
 <Command_Sequence>
@@ -111,6 +113,20 @@ Immediately use the returned JSON to decide whether to:
 - crystallize now
 - stop and warn that the interview is blocked
 
+When you want structured runtime guidance for the next move, call:
+
+```bash
+rein interview next --slug <slug> --json
+```
+
+Use its output for:
+- `suggestedMode`
+- `suggestedFocus`
+- `questionStrategy`
+- `suggestedMove`
+
+Treat that as structure, not as a replacement for your own question framing.
+
 ## Check live status
 
 At any time, or when you need a refreshed external view, call:
@@ -142,6 +158,12 @@ When the runtime says `nextAction=crystallize`, build a structured summary JSON 
 - `executionBridge`
 - `transcriptSummary`
 
+Use canonical `executionBridge` values so runtime handoff stays machine-usable:
+- `plan`
+- `implementation`
+- `refinement`
+- `scope`
+
 Then call:
 
 ```bash
@@ -153,6 +175,19 @@ This writes:
 - spec bundle:
   - `.rein/specs/rein-interview-<slug>/spec.md`
   - `.rein/specs/rein-interview-<slug>/result.json`
+
+## Handoff orchestration
+
+After crystallization, ask the runtime for the recommended next workflow:
+
+```bash
+rein interview handoff --slug <slug> --to plan --json
+```
+
+Use that output to:
+- name the next skill or workflow
+- point at the correct `result.json`
+- recommend the next invocation, such as `rein-plan --from-interview <slug>`
 </Command_Sequence>
 
 <Interview_Strategy>
@@ -172,9 +207,10 @@ When crystallization succeeds:
 - tell the user the final clarity score and readiness status
 - point to the transcript and spec bundle paths
 - recommend the next execution bridge:
-  - `rein-plan`
-  - direct implementation
-  - further refinement
+  - `plan`
+  - `implementation`
+  - `refinement`
+  - `scope`
 </Final_Output>
 
 <Checklist>
