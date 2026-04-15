@@ -4,7 +4,7 @@
 
 # REIN (Regulated Execution and Inference Navigation)
 
-REIN is a small harness for stricter, more explicit engineering workflow with Codex and Claude Code.
+REIN is a **lightweight** and **hands-off** harness for stricter, more explicit engineering workflow with Codex and Claude Code.
 
 It adds:
 - `REIN.md` for regulated execution and inference guidance
