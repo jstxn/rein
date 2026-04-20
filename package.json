@@ -1,6 +1,6 @@
 {
   "name": "@jstxn/rein",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "REIN harness installer for Codex and Claude Code",
   "type": "module",
   "bin": {
