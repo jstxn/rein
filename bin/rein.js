@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-import { main } from "../lib/cli.js";
+import { execute } from "@oclif/core";
 
-main(process.argv.slice(2)).catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exit(1);
-});
+await execute({ dir: import.meta.url });

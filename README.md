@@ -40,6 +40,10 @@ rein status              # show what's installed and whether it's outdated
 rein update              # re-install REIN surfaces, replacing existing files
 rein remove              # uninstall REIN from the repo (interactive)
 rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts)
+rein interview init --idea "..."             # start a durable interview
+rein interview status --slug my-topic        # inspect live interview state
+rein interview resume --slug my-topic        # resume a saved interview
+rein interview crystallize --slug my-topic --summary '{"intent":"...","desiredOutcome":"..."}'
 ```
 
 The `--codex` and `--claude` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.
@@ -78,6 +82,7 @@ Typical workflow:
 3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
 4. Use:
    - `rein-interview` for vague or underspecified work
+   - `rein interview ...` when you need runtime-backed interview state, status, or artifact output
    - `rein-inspect` for a durable repo map
    - `rein-triage` before ambiguous or multi-file changes
    - `rein-plan` to break complex work into sequenced steps with checkpoints

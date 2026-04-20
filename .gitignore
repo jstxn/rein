@@ -1,5 +1,6 @@
 .omx/
 .omc/
+node_modules/
 .claude/*
 !.claude/commands/
 .rein/*
