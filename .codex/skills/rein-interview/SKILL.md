@@ -55,6 +55,117 @@ You own:
 - Use runtime suggestions for structure, but choose the actual next question yourself
 </Execution_Policy>
 
+<Interview_Presentation_Contract>
+Use a consistent chat-safe presentation frame for every visible interview turn.
+
+## Layout
+
+Normal round:
+
+```text
+[ Interview ]
+| Progress: Round X of Y
+| Phase: clarifying structure
+
+| Current clarity: N%
+
+| Question
+| [one to two short lines]
+|
+| A. ...
+| B. ...
+| C. ...
+```
+
+Open-question variant:
+
+```text
+[ Interview ]
+| Progress: Round X of Y
+| Phase: clarifying structure
+
+| Current clarity: N%
+
+| Question
+| [one to two short lines]
+```
+
+Review:
+
+```text
+[ Review ]
+| Progress: Round X of Y
+| Phase: confirming summary
+
+| Current clarity: N%
+
+| Question
+| [one to two short lines]
+```
+
+Handoff:
+
+```text
+[ Handoff ]
+| Progress: Round X of Y
+| Phase: preparing handoff
+
+| Status: ready for handoff
+
+| Question
+| [one to two short lines]
+```
+
+## Formatting Rules
+
+- Always preserve blank lines between sections exactly as shown.
+- Keep `Progress` round-based: `Round X of Y`.
+- Keep phase names as lowercase phrases.
+- For normal rounds and review, show `Current clarity: N%`.
+- For handoff, replace clarity with `Status: ready for handoff`.
+- Keep the question to one ask, written in one to two short lines.
+- If extra context is needed, fold it into the question itself instead of adding another section.
+
+## Header Mapping
+
+- Use `[ Interview ]` for normal rounds.
+- Use `[ Review ]` for final confirmation and crystallization.
+- Use `[ Handoff ]` for transition into the next workflow.
+
+## Fixed Phase Vocabulary
+
+Use only these phase names:
+
+- `clarifying structure`
+- `narrowing scope`
+- `resolving tension`
+- `confirming summary`
+- `preparing handoff`
+
+## Option Rules
+
+- Use `A.`, `B.`, and `C.` options when the user is choosing between clear alternatives.
+- Use an open question when structured options would feel forced.
+- Do not add a separate reply-hint section for open questions.
+
+## Transition Rules
+
+Use clarity score as guidance, but make the final phase choice with interviewer judgment.
+
+- Start in `clarifying structure`.
+- Move into `narrowing scope` when structure is clear and clarity is at least `65%`.
+- Move into `resolving tension` when contradiction exists or direction is unstable.
+- Tension overrides score-based advancement.
+- Move into `confirming summary` when clarity is at least `85%` and no major tension remains.
+- Move into `preparing handoff` when the summary is confirmed and the next workflow is identifiable.
+
+## Reopening Rules
+
+- Do not move backward casually between phases.
+- Allow reopening only from `[ Review ]`.
+- Reopen only for material corrections affecting intent, scope boundaries, tension status, or handoff readiness.
+</Interview_Presentation_Contract>
+
 <Command_Sequence>
 
 ## Start a new interview

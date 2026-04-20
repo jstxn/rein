@@ -3,6 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import {
+  formatInterviewHandoff,
+  formatInterviewNext,
+} from "../lib/core/interview-orchestration.js";
+import { formatInterviewStatus } from "../lib/core/interview-state.js";
 import { cliPath, repoRoot, runCli } from "../test-support/support.js";
 
 function parseJson(output) {
@@ -159,11 +164,9 @@ test("rein interview end-to-end flow writes state, status, resume, and spec bund
   assert.match(nextAfterCompletion.recommendedCommand, /rein interview handoff/);
 
   const handoff = parseJson(
-    runCli(
-      cliPath,
-      ["interview", "handoff", "--slug", initState.slug, "--to", "plan", "--json"],
-      { cwd: targetRepo },
-    ),
+    runCli(cliPath, ["interview", "handoff", "--slug", initState.slug, "--to", "plan", "--json"], {
+      cwd: targetRepo,
+    }),
   );
   assert.equal(handoff.handoffTarget, "plan");
   assert.equal(handoff.recommendedSkill, "rein-plan");
@@ -382,20 +385,228 @@ test("rein interview handoff normalizes non-canonical execution bridge labels", 
   const handoff = parseJson(
     runCli(
       cliPath,
-      [
-        "interview",
-        "handoff",
-        "--slug",
-        initState.slug,
-        "--to",
-        "direct implementation",
-        "--json",
-      ],
+      ["interview", "handoff", "--slug", initState.slug, "--to", "direct implementation", "--json"],
       { cwd: targetRepo },
     ),
   );
   assert.equal(handoff.handoffTarget, "implementation");
   assert.equal(handoff.recommendedSkill, "implementation");
+});
+
+test("rein interview handoff rejects unknown explicit targets", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-handoff-invalid-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  const initState = parseJson(
+    runCli(cliPath, ["interview", "init", "--idea", "Invalid handoff", "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "update-round",
+      "--slug",
+      initState.slug,
+      "--round",
+      "1",
+      "--target",
+      "intent",
+      "--question",
+      "Why now?",
+      "--answer",
+      "We need a valid next workflow.",
+      "--scores",
+      '{"intent":0.95,"outcome":0.95,"scope":0.9,"constraints":0.9,"success":0.9,"context":0.9}',
+      "--non-goals-explicit",
+      "--decision-boundaries-explicit",
+      "--pressure-pass-complete",
+      "--json",
+    ],
+    { cwd: targetRepo },
+  );
+
+  runCli(
+    cliPath,
+    ["interview", "crystallize", "--slug", initState.slug, "--summary", summaryPayload(), "--json"],
+    { cwd: targetRepo },
+  );
+
+  assert.throws(
+    () =>
+      runCli(cliPath, ["interview", "handoff", "--slug", initState.slug, "--to", "typo-workflow"], {
+        cwd: targetRepo,
+      }),
+    (error) => {
+      assert.match(error.stderr.toString(), /Unknown handoff target "typo-workflow"/);
+      assert.match(error.stderr.toString(), /implementation, plan, refinement, scope/);
+      return true;
+    },
+  );
+});
+
+test("rein interview human-readable runtime output follows the presentation contract", () => {
+  const statusOutput = formatInterviewStatus({
+    artifactPaths: {
+      context: "/tmp/context.md",
+      result: "/tmp/result.json",
+      spec: "/tmp/spec.md",
+      specDir: "/tmp/spec-dir",
+      state: "/tmp/state.json",
+      transcript: "/tmp/transcript.md",
+    },
+    clarityScore: 61,
+    contextType: "brownfield",
+    currentRound: 2,
+    idea: "Interview presentation",
+    maxRounds: 5,
+    nextAction: "continue",
+    profile: "standard",
+    readinessGates: {
+      decisionBoundariesExplicit: false,
+      nonGoalsExplicit: false,
+      pressurePassComplete: false,
+    },
+    slug: "interview-presentation",
+    status: "in_progress",
+    threshold: 80,
+    weakestDimension: "scope",
+  });
+  assert.match(statusOutput, /^\[ Interview \]$/m);
+  assert.match(statusOutput, /\| Progress: Round 2 of 5/);
+  assert.match(statusOutput, /\| Phase: clarifying structure/);
+  assert.match(statusOutput, /\n\n\| Current clarity: 61%\n\n/);
+  assert.match(
+    statusOutput,
+    /\| Question\n\| What is the next question that will most improve clarity from this state\?/,
+  );
+  assert.doesNotMatch(statusOutput, /Readiness gates|Artifacts|Weakest dimension/);
+
+  const reviewOutput = formatInterviewNext({
+    availableHandoffTargets: [],
+    clarityScore: 88,
+    currentRound: 5,
+    maxRounds: 5,
+    questionStrategy: "summary-synthesis",
+    recommendedCommand:
+      "rein interview crystallize --slug interview-presentation --summary '<json>' --json",
+    slug: "interview-presentation",
+    status: "in_progress",
+    suggestedFocus: "summary",
+    suggestedMode: "crystallize",
+    suggestedMove: "Prepare the structured summary JSON and crystallize the interview bundle.",
+    unresolvedReadinessGates: [],
+  });
+  assert.match(reviewOutput, /^\[ Review \]$/m);
+  assert.match(reviewOutput, /\| Progress: Round 5 of 5/);
+  assert.match(reviewOutput, /\| Phase: confirming summary/);
+  assert.match(reviewOutput, /\n\n\| Current clarity: 88%\n\n/);
+  assert.match(
+    reviewOutput,
+    /\| Question\n\| Does this interview look ready to crystallize into a summary bundle\?/,
+  );
+
+  const continueOutput = formatInterviewNext({
+    availableHandoffTargets: [],
+    clarityScore: 57,
+    currentRound: 1,
+    maxRounds: 12,
+    questionStrategy: "boundary-setting",
+    recommendedCommand:
+      "rein interview update-round --slug interview-presentation --round 2 ... --json",
+    slug: "interview-presentation",
+    status: "in_progress",
+    suggestedFocus: "nonGoalsExplicit",
+    suggestedMode: "continue",
+    suggestedMove: "Make non-goals explicit so the work stops drifting outward.",
+    suggestedQuestion: "What should stay out of scope so this work stops drifting outward?",
+    unresolvedReadinessGates: ["nonGoalsExplicit"],
+  });
+  assert.match(continueOutput, /^\[ Interview \]$/m);
+  assert.match(
+    continueOutput,
+    /\| Question\n\| What should stay out of scope so this work stops drifting outward\?/,
+  );
+  assert.doesNotMatch(
+    continueOutput,
+    /\| Question\n\| Make non-goals explicit so the work stops drifting outward\./,
+  );
+
+  const handoffOutput = formatInterviewHandoff({
+    artifactPaths: {
+      context: "/tmp/context.md",
+      result: "/tmp/result.json",
+      spec: "/tmp/spec.md",
+      state: "/tmp/state.json",
+      transcript: "/tmp/transcript.md",
+    },
+    availableHandoffTargets: ["plan", "implementation", "scope"],
+    handoffTarget: "plan",
+    recommendedSkill: "rein-plan",
+    recommendedSkillInvocation: "rein-plan --from-interview interview-presentation",
+    slug: "interview-presentation",
+    sourceResult: "/tmp/result.json",
+    status: "completed",
+    suggestedMove: "Hand the completed interview bundle into the next workflow.",
+    warning: null,
+    currentRound: 5,
+    maxRounds: 5,
+  });
+  assert.match(handoffOutput, /^\[ Handoff \]$/m);
+  assert.match(handoffOutput, /\| Progress: Round 5 of 5/);
+  assert.match(handoffOutput, /\| Phase: preparing handoff/);
+  assert.match(handoffOutput, /\n\n\| Status: ready for handoff\n\n/);
+  assert.match(
+    handoffOutput,
+    /\| Question\n\| Which workflow should this interview enter next\?\n\|\n\| A\. `plan` via `rein-plan --from-interview interview-presentation`\n\| B\. `implementation`\n\| C\. `scope`/,
+  );
+});
+
+test("rein interview next CLI renders a real question for continue mode", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-next-question-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  const initState = parseJson(
+    runCli(cliPath, ["interview", "init", "--idea", "Presentation drift", "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "update-round",
+      "--slug",
+      initState.slug,
+      "--round",
+      "1",
+      "--target",
+      "intent",
+      "--question",
+      "Why now?",
+      "--answer",
+      "Need clearer scope.",
+      "--scores",
+      '{"intent":0.7,"outcome":0.6,"scope":0.5,"constraints":0.5,"success":0.4,"context":0.6}',
+      "--json",
+    ],
+    { cwd: targetRepo },
+  );
+
+  const nextOutput = runCli(cliPath, ["interview", "next", "--slug", initState.slug], {
+    cwd: targetRepo,
+  }).toString();
+
+  assert.match(
+    nextOutput,
+    /\| Question\n\| What should stay out of scope so this work stops drifting outward\?/,
+  );
+  assert.doesNotMatch(nextOutput, /\| Question\n\| Make non-goals explicit/);
 });
 
 test("rein-interview Claude and Codex prompt copies stay in sync", () => {
@@ -417,6 +628,14 @@ test("rein-interview Claude and Codex prompt copies stay in sync", () => {
   assert.match(claude, /rein interview status --slug <slug> --json/);
   assert.match(claude, /rein interview crystallize --slug <slug> --summary '<json>' --json/);
   assert.match(claude, /Use canonical `executionBridge` values/);
+  assert.match(claude, /<Interview_Presentation_Contract>/);
+  assert.match(claude, /\[ Interview \]/);
+  assert.match(claude, /\[ Review \]/);
+  assert.match(claude, /\[ Handoff \]/);
+  assert.match(claude, /\| Current clarity: N%/);
+  assert.match(claude, /\| Status: ready for handoff/);
+  assert.match(claude, /clarity is at least `65%`/);
+  assert.match(claude, /clarity is at least `85%`/);
   assert.match(claude, /- `completed`/);
   assert.match(claude, /Task: \{\{ARGUMENTS\}\}/);
 });

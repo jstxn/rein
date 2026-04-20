@@ -430,6 +430,48 @@ test("rein status defaults to the enclosing repo root from nested directories", 
   assert.equal(fs.realpathSync(output.target), fs.realpathSync(targetRepo));
 });
 
+test("bare --repo uses the enclosing repo root from nested directories", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-explicit-repo-nested-"));
+  const targetRepo = path.join(tempRoot, "target");
+  const nestedDir = path.join(targetRepo, "nested", "child");
+  fs.mkdirSync(nestedDir, { recursive: true });
+  fs.mkdirSync(path.join(targetRepo, ".git"), { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", "--force"], {
+    cwd: nestedDir,
+  });
+
+  assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")));
+  assert.ok(fs.existsSync(path.join(targetRepo, "AGENTS.md")));
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein")));
+  assert.ok(
+    !fs.existsSync(path.join(nestedDir, "REIN.md")),
+    "expected bare --repo init to avoid writing into the nested cwd",
+  );
+
+  const statusOutput = JSON.parse(
+    runCli(cliPath, ["status", "--repo", "--json"], {
+      cwd: nestedDir,
+    }).toString(),
+  );
+  assert.equal(fs.realpathSync(statusOutput.target), fs.realpathSync(targetRepo));
+
+  runCli(cliPath, ["remove", "--repo", "--yes"], {
+    cwd: nestedDir,
+  });
+
+  assert.ok(!fs.existsSync(path.join(targetRepo, "REIN.md")));
+  assert.ok(!fs.existsSync(path.join(targetRepo, "AGENTS.md")));
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "rein-install")),
+    "expected bare --repo remove to uninstall from the repo root",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".rein")),
+    "expected .rein to remain preserved at the repo root",
+  );
+});
+
 test("rein remove requires --yes in non-interactive mode", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-no-yes-"));
   const targetRepo = path.join(tempRoot, "target");
