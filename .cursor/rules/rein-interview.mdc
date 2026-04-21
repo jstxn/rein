@@ -1,7 +1,6 @@
 ---
-name: rein-interview
 description: Runtime-backed Socratic interview with durable state, clarity scoring, and spec bundle output
-argument-hint: "[--quick|--standard|--deep] [--resume <slug>] <idea or vague description>"
+alwaysApply: false
 ---
 
 <Purpose>

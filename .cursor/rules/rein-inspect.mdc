@@ -1,0 +1,173 @@
+---
+description: Understand a codebase and maintain .rein/codebase/ as a navigable map with evidence-backed findings
+alwaysApply: false
+---
+
+# rein-inspect
+
+`rein-inspect` is a documentation-first reconnaissance skill. Its job is to understand a codebase carefully and maintain a durable map of that understanding under `.rein/codebase/`.
+
+The skill produces:
+- `.rein/codebase/MAP.md`
+- topical companion docs under `.rein/codebase/`
+
+It observes and records. It does not recommend fixes.
+
+## When to Use
+
+Use this skill when:
+- you need a high-signal map of an unfamiliar repo or subsystem
+- a project has grown beyond what one README can orient cleanly
+- you want durable codebase reference docs for future agents or humans
+- repeated work keeps re-discovering the same architecture or boundary facts
+
+## Do Not Use
+
+Do not use this skill when:
+- the user asked for implementation, refactoring, or repair rather than inspection
+- the repo already has a maintained codebase map that only needs a tiny manual update
+- you only need a quick one-turn explanation instead of persistent docs
+- you are not prepared to read enough of the codebase to support the claims you write
+
+## Operating Boundaries
+
+- Read before writing.
+- Follow actual code evidence, not guessed architecture.
+- Keep output rooted at `.rein/codebase/`.
+- Preserve and update existing docs in place.
+- Add a new topical doc only when the inspected codebase reveals a real uncovered area.
+- Record observations and evidence-backed inferred risks.
+- Do not propose fixes, refactors, or migrations.
+- Do not edit application code as part of this skill unless the user explicitly asked for code changes outside the inspection pass.
+
+## Output Contract
+
+Always maintain this docs tree:
+
+```text
+.rein/
+  codebase/
+    MAP.md
+    <topic>.md
+    <topic>.md
+```
+
+`MAP.md` is the entrypoint. It should explain the major sections of the codebase and link to the topical docs.
+
+Topical docs should be created from discovered domains, not a hard-coded list. Examples might include:
+- `architecture.md`
+- `frontend.md`
+- `backend.md`
+- `data-flow.md`
+- `testing.md`
+- `tooling.md`
+
+The exact set depends on the repo.
+
+## Procedure
+
+1. Establish scope
+   - If the caller provides a subsystem or path, inspect that area first and expand only as needed to explain its boundaries.
+   - If no scope is provided, inspect the full repo structure.
+
+2. Discover the repo shape
+   - Read root docs and configuration first.
+   - Identify major runtime surfaces, packages, apps, libraries, services, tooling, tests, and infrastructure.
+   - Trace how the main entrypoints connect to the rest of the codebase.
+
+3. Group the codebase into stable domains
+   - Create topical docs around real boundaries in the codebase.
+   - Prefer a few meaningful docs over a file-by-file dump.
+   - Use names that describe actual responsibilities.
+
+4. Read enough to support each claim
+   - Verify architecture statements against code.
+   - Confirm patterns by reading representative files, not one isolated example.
+   - Confirm fallbacks, failure paths, and important conditionals before documenting them.
+
+5. Write or update `MAP.md`
+   - Summarize the major domains.
+   - Link to each topical doc.
+   - Explain what each doc is for.
+   - Keep it navigational, not verbose.
+
+6. Write or update topical docs
+   - Preserve useful existing material when it remains accurate.
+   - Update stale sections in place.
+   - Add a new topical doc when the current set does not cover an important discovered domain.
+
+7. Review for drift
+   - Remove claims that are not supported by what you read.
+   - Remove recommendation language.
+   - Check that the map and topical docs still agree with each other.
+
+## Required Structure For Each Topical Doc
+
+Each generated topical doc should use this minimum structure:
+
+```text
+# <Topic>
+
+## What This Area Does
+- concise responsibility summary
+
+## Key Paths
+- important directories, files, or entrypoints
+
+## How It Works
+- main flows, control paths, or lifecycle notes
+
+## Patterns And Conventions
+- repeated local patterns, boundaries, and best practices embodied in the code
+
+## Dependencies And Touchpoints
+- what this area depends on
+- what depends on it
+
+## Findings
+- observed findings
+- evidence-backed inferred risks
+```
+
+Keep sections concise. Expand only when the code actually justifies it.
+
+## Findings Discipline
+
+`Findings` may include:
+- direct observations from the code
+- evidence-backed inferred risks
+- notable fallbacks
+- likely regression-sensitive paths
+
+`Findings` must not include:
+- fix proposals
+- refactor advice
+- migration plans
+- generic style opinions detached from the repo
+
+When writing an inferred risk:
+- tie it to the code evidence that led to it
+- state it as a risk or likely consequence, not as a fact you did not verify
+- stop before prescribing a remedy
+
+The model is expert inspection: understand carefully, note what is there, note what looks risky, and hand over the notes.
+
+## Quality Bar
+
+The output is good enough when:
+- `.rein/codebase/MAP.md` gives a reliable starting point for navigating the repo
+- each topical doc reflects a real architectural or functional boundary
+- descriptions explain behavior and responsibilities, not just filenames
+- findings are grounded and useful without drifting into advice
+- repeat runs improve the docs without trashing prior useful structure
+
+## Final Checklist
+
+- enough of the codebase was read to support the written claims
+- `.rein/codebase/MAP.md` exists and links to the topical docs
+- topical docs are organized by real repo domains
+- existing docs were updated in place when possible
+- new docs were added only for genuinely uncovered areas
+- each topical doc has a `Findings` section
+- inferred risks are evidence-backed and clearly framed
+- no fixes or recommendations were proposed

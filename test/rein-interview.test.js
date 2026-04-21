@@ -270,7 +270,7 @@ test("rein interview enforces round ordering and crystallization readiness", () 
         { cwd: targetRepo },
       ),
     (error) => {
-      const message = error.stderr.toString().replace(/\s+/g, " ");
+      const message = error.stderr.toString().replace(/[›]/g, "").replace(/\s+/g, " ");
       assert.match(
         message,
         /must include non-empty fields: acceptanceCriteria, constraints, decisionBoundaries, executionBridge, inScope, outOfScope, technicalContext/,
@@ -309,6 +309,42 @@ test("rein interview resume can select a slug interactively when omitted", () =>
 
   assert.equal(selected.slug, second.slug);
   assert.notEqual(selected.slug, first.slug);
+});
+
+test("rein interview JSON errors include the failure message", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-json-error-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  const initState = parseJson(
+    runCli(cliPath, ["interview", "init", "--idea", "JSON errors", "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+
+  assert.throws(
+    () =>
+      runCli(
+        cliPath,
+        [
+          "interview",
+          "crystallize",
+          "--slug",
+          initState.slug,
+          "--force",
+          "--summary",
+          '{"intent":"x","desiredOutcome":"y","transcriptSummary":"z"}',
+          "--json",
+        ],
+        { cwd: targetRepo },
+      ),
+    (error) => {
+      const payload = parseJson(error.stdout);
+      assert.match(payload.error.message, /Crystallize summary JSON must include non-empty fields/);
+      assert.equal(payload.error.name, "Error");
+      return true;
+    },
+  );
 });
 
 test("rein interview handoff normalizes non-canonical execution bridge labels", () => {
@@ -637,7 +673,54 @@ test("rein-interview Claude and Codex prompt copies stay in sync", () => {
   assert.match(claude, /clarity is at least `65%`/);
   assert.match(claude, /clarity is at least `85%`/);
   assert.match(claude, /- `completed`/);
+  assert.match(claude, /Recommended next step: <command or step>/);
+  assert.match(claude, /ask the user whether the agent should do that next step now/);
+  assert.match(claude, /recommendedSkillInvocation/);
   assert.match(claude, /Task: \{\{ARGUMENTS\}\}/);
+});
+
+test("rein Cursor rule bodies stay in sync with Claude command bodies", () => {
+  const skills = [
+    "rein-interview",
+    "rein-inspect",
+    "rein-cleanup",
+    "rein-triage",
+    "rein-plan",
+    "rein-scope",
+    "rein-diff-review",
+    "rein-verify",
+    "rein-retro",
+  ];
+
+  const stripFrontmatter = (text) => {
+    const match = text.match(/^---\n[\s\S]*?\n---\n?/);
+    return match ? text.slice(match[0].length) : text;
+  };
+
+  for (const skill of skills) {
+    const claudeBody = stripFrontmatter(
+      fs.readFileSync(path.join(repoRoot, ".claude", "commands", `${skill}.md`), "utf8"),
+    );
+    const cursorRaw = fs.readFileSync(
+      path.join(repoRoot, ".cursor", "rules", `${skill}.mdc`),
+      "utf8",
+    );
+    const cursorFrontmatter = cursorRaw.match(/^---\n[\s\S]*?\n---\n?/);
+    assert.ok(cursorFrontmatter, `cursor rule ${skill} must have frontmatter`);
+    assert.match(
+      cursorFrontmatter[0],
+      /alwaysApply: false/,
+      `cursor rule ${skill} must use alwaysApply: false`,
+    );
+    assert.match(
+      cursorFrontmatter[0],
+      /description:/,
+      `cursor rule ${skill} must have description`,
+    );
+
+    const cursorBody = stripFrontmatter(cursorRaw);
+    assert.equal(cursorBody, claudeBody, `cursor rule ${skill} body drifted from claude command`);
+  }
 });
 
 test("rein status supports machine-readable JSON output", () => {
