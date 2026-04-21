@@ -679,6 +679,35 @@ test("rein-interview Claude and Codex prompt copies stay in sync", () => {
   assert.match(claude, /Task: \{\{ARGUMENTS\}\}/);
 });
 
+test("rein-cleanup prompt copies tell the agent to report naturally", () => {
+  const codex = fs.readFileSync(
+    path.join(repoRoot, ".codex", "skills", "rein-cleanup", "SKILL.md"),
+    "utf8",
+  );
+  const claude = fs.readFileSync(
+    path.join(repoRoot, ".claude", "commands", "rein-cleanup.md"),
+    "utf8",
+  );
+  const cursor = fs.readFileSync(
+    path.join(repoRoot, ".cursor", "rules", "rein-cleanup.mdc"),
+    "utf8",
+  );
+  const cursorBody = cursor.replace(/^---\n[\s\S]*?\n---\n?/, "");
+
+  for (const prompt of [codex, claude, cursorBody]) {
+    assert.match(prompt, /## Output Guidance/);
+    assert.match(
+      prompt,
+      /Deliver the cleanup result as a normal agent response in natural language\./,
+    );
+    assert.match(
+      prompt,
+      /Do not wrap the cleanup summary in a fenced markdown block unless the user explicitly asks for raw markdown\./,
+    );
+    assert.doesNotMatch(prompt, /CLEANUP REPORT/);
+  }
+});
+
 test("rein Cursor rule bodies stay in sync with Claude command bodies", () => {
   const skills = [
     "rein-interview",

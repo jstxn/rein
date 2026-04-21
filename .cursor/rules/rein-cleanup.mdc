@@ -65,35 +65,21 @@ Use this skill when:
    - Remaining risks
    - Residual follow-ups or consciously deferred cleanup
 
-## Output Format
+## Output Guidance
 
-```text
-CLEANUP REPORT
-==============
+Deliver the cleanup result as a normal agent response in natural language.
 
-Scope: [files or feature area]
-Behavior Lock: [targeted regression tests added or run]
-Cleanup Plan: [bounded smells and order]
-
-Passes Completed:
-1. Pass 1: Dead code deletion - [concise fix]
-2. Pass 2: Duplicate removal - [concise fix]
-3. Pass 3: Naming/error handling cleanup - [concise fix]
-4. Pass 4: Test reinforcement - [concise fix]
-
-Quality Gates:
-- Regression tests: PASS/FAIL
-- Lint: PASS/FAIL
-- Typecheck: PASS/FAIL
-- Tests: PASS/FAIL
-- Static/security scan: PASS/FAIL or N/A
-
-Changed Files:
-- [path] - [simplification]
-
-Remaining Risks:
-- [none or short deferred item]
-```
+- Do not wrap the cleanup summary in a fenced markdown block unless the user explicitly asks for raw markdown.
+- A short paragraph plus flat bullets is preferred over a rigid template.
+- Cover:
+  - scope
+  - behavior lock
+  - cleanup plan
+  - passes completed
+  - quality gates
+  - changed files
+  - remaining risks
+- Use explicit `PASS` or `FAIL` labels only when they add clarity; otherwise speak plainly as the agent.
 
 ## Scenario Examples
 
