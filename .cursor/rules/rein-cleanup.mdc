@@ -1,6 +1,6 @@
 ---
-name: rein-cleanup
 description: Run a regression-tests-first cleanup/refactor workflow to reduce slop
+alwaysApply: false
 ---
 
 # rein-cleanup

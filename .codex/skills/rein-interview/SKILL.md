@@ -299,6 +299,7 @@ Use that output to:
 - name the next skill or workflow
 - point at the correct `result.json`
 - recommend the next invocation, such as `rein-plan --from-interview <slug>`
+- use `recommendedSkillInvocation` or the best available runtime handoff hint to build the final user-facing close-out
 </Command_Sequence>
 
 <Interview_Strategy>
@@ -317,11 +318,9 @@ Use that output to:
 When crystallization succeeds:
 - tell the user the final clarity score and readiness status
 - point to the transcript and spec bundle paths
-- recommend the next execution bridge:
-  - `plan`
-  - `implementation`
-  - `refinement`
-  - `scope`
+- add a final line in this exact form: `Recommended next step: <command or step>`
+- ask the user whether the agent should do that next step now
+- prefer the runtime handoff recommendation when available, for example `rein-plan --from-interview <slug>`
 </Final_Output>
 
 <Checklist>

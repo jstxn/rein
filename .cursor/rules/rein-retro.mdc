@@ -1,0 +1,31 @@
+---
+description: Use after a miss, regression, or suspicious shortcut. Captures what failed and what rule should change.
+alwaysApply: false
+---
+
+# rein-retro
+
+Use this after a miss, failed check, or suspicious shortcut.
+
+## Steps
+
+1. State what failed.
+2. Identify the false assumption or missed search step.
+3. Classify the miss:
+   - bluffing
+   - incomplete search
+   - insufficient verification
+   - reward hacking
+   - other
+4. State what evidence would have prevented the miss.
+5. Propose one concrete protocol improvement.
+
+## Output
+
+Emit a short retro note with:
+
+- failure
+- root assumption
+- miss classification
+- missing evidence
+- rule or prompt update to add back into the harness

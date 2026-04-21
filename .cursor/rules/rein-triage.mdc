@@ -1,0 +1,28 @@
+---
+description: Use before ambiguous or multi-file work. Surfaces relevant files, assumptions, success criteria, and cheating boundaries.
+alwaysApply: false
+---
+
+# rein-triage
+
+Use this before editing when the task is ambiguous, broad, risky, or likely to touch multiple files.
+
+## Steps
+
+1. Read the task and identify the most likely relevant files.
+2. State the top assumptions.
+3. Separate verified facts from unverified assumptions.
+4. Define what success looks like.
+5. Define what would count as cheating, bluffing, or reward hacking.
+6. If the task is impossible or conflicting, stop and report the conflict instead of forcing a pass.
+
+## Output
+
+Emit a short triage note with:
+
+- relevant files
+- verified assumptions
+- open assumptions
+- success definition
+- cheating boundary
+- stop-and-report trigger, if any

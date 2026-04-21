@@ -104,6 +104,56 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
   );
 });
 
+test("rein init --repo --cursor installs Cursor surfaces only", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-cursor-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  const agentsPath = path.join(targetRepo, "AGENTS.md");
+  const rulePath = path.join(targetRepo, ".cursor", "rules", "rein-interview.mdc");
+  const inspectRulePath = path.join(targetRepo, ".cursor", "rules", "rein-inspect.mdc");
+  const agentsBody = fs.readFileSync(agentsPath, "utf8");
+  const ruleBody = fs.readFileSync(rulePath, "utf8");
+  const inspectRuleBody = fs.readFileSync(inspectRulePath, "utf8");
+
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein")), "expected .rein directory");
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".rein", "codebase")),
+    "expected .rein/codebase directory",
+  );
+  assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
+
+  assert.match(agentsBody, /## REIN/);
+  assert.match(agentsBody, /rein-inspect/);
+  assert.match(agentsBody, /rein-interview/);
+  assert.match(ruleBody, /\.rein\/context\//);
+  assert.match(ruleBody, /\.rein\/specs\//);
+  assert.match(inspectRuleBody, /\.rein\/codebase\//);
+
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rein-install", "installed-from.txt")),
+    "expected cursor install notes",
+  );
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, "CLAUDE.md")),
+    "cursor-only should not create CLAUDE.md",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands")),
+    "cursor-only should not create .claude/commands",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills")),
+    "cursor-only should not create .codex/skills",
+  );
+});
+
 test("rein init --repo --codex --claude installs both surfaces", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-both-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -135,6 +185,49 @@ test("rein init --repo --codex --claude installs both surfaces", () => {
   assert.ok(
     fs.existsSync(path.join(targetRepo, ".claude", "rein-install", "installed-from.txt")),
     "expected claude install notes",
+  );
+});
+
+test("rein init --repo --codex --claude --cursor installs all surfaces", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-all-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  assert.ok(fs.existsSync(path.join(targetRepo, ".rein")), "expected .rein directory");
+  assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
+
+  assert.ok(fs.existsSync(path.join(targetRepo, "AGENTS.md")), "expected AGENTS.md");
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-verify", "SKILL.md")),
+    "expected codex skill",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".codex", "rein-install", "installed-from.txt")),
+    "expected codex install notes",
+  );
+
+  assert.ok(fs.existsSync(path.join(targetRepo, "CLAUDE.md")), "expected CLAUDE.md");
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-verify.md")),
+    "expected claude command",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".claude", "rein-install", "installed-from.txt")),
+    "expected claude install notes",
+  );
+
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-verify.mdc")),
+    "expected cursor rule",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rein-install", "installed-from.txt")),
+    "expected cursor install notes",
   );
 });
 
@@ -312,6 +405,35 @@ test("rein init fails clearly when a bundled Claude asset is missing", () => {
   );
 });
 
+test("rein init fails clearly when a bundled Cursor asset is missing", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-missing-cursor-"));
+  const sourceRepo = path.join(tempRoot, "source");
+  const targetRepo = path.join(tempRoot, "target");
+
+  copyRepo(sourceRepo);
+  fs.mkdirSync(targetRepo, { recursive: true });
+  fs.unlinkSync(path.join(sourceRepo, ".cursor", "rules", "rein-interview.mdc"));
+
+  const copiedCliPath = path.join(sourceRepo, "bin", "rein.js");
+
+  assert.throws(
+    () =>
+      execFileSync(
+        process.execPath,
+        [copiedCliPath, "init", "--repo", targetRepo, "--cursor", "--force"],
+        {
+          cwd: sourceRepo,
+          stdio: "pipe",
+        },
+      ),
+    (error) => {
+      assert.match(error.stderr.toString(), /REIN package is incomplete/);
+      assert.match(error.stderr.toString(), /\.cursor\/rules\/rein-interview\.mdc/);
+      return true;
+    },
+  );
+});
+
 test("rein status/update/remove --user work for linked installs", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-link-user-"));
   const sourceRepo = path.join(tempRoot, "source");
@@ -371,6 +493,65 @@ test("rein status/update/remove --user work for linked installs", () => {
   );
 });
 
+test("rein status/update/remove --user work for linked cursor installs", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-link-user-cursor-"));
+  const sourceRepo = path.join(tempRoot, "source");
+  const tempHome = path.join(tempRoot, "home");
+
+  copyRepo(sourceRepo);
+  fs.mkdirSync(tempHome, { recursive: true });
+
+  const copiedCliPath = path.join(sourceRepo, "bin", "rein.js");
+  const env = { ...process.env, HOME: tempHome, NO_COLOR: "1" };
+
+  runCli(copiedCliPath, ["init", "--user", "--cursor", "--link", "--force"], {
+    cwd: sourceRepo,
+    env,
+  });
+
+  assert.ok(
+    isSymbolicLink(path.join(tempHome, ".cursor", "rein", "REIN.md")),
+    "expected linked user REIN.md",
+  );
+  assert.ok(
+    isSymbolicLink(path.join(tempHome, ".cursor", "rules", "rein-interview.mdc")),
+    "expected linked user Cursor rule",
+  );
+
+  const statusOutput = runCliText(copiedCliPath, ["status", "--user", "--cursor"], {
+    cwd: sourceRepo,
+    env,
+  });
+
+  assert.match(statusOutput, /Mode\s+link/);
+  assert.match(statusOutput, new RegExp(escapeRegExp(tempHome)));
+  assert.doesNotMatch(statusOutput, new RegExp(escapeRegExp(sourceRepo)));
+
+  runCli(copiedCliPath, ["update", "--user", "--cursor"], {
+    cwd: sourceRepo,
+    env,
+  });
+
+  assert.ok(
+    isSymbolicLink(path.join(tempHome, ".cursor", "rules", "rein-interview.mdc")),
+    "expected linked user Cursor rule after update",
+  );
+
+  runCli(copiedCliPath, ["remove", "--user", "--cursor", "--yes"], {
+    cwd: sourceRepo,
+    env,
+  });
+
+  assert.ok(
+    !fs.existsSync(path.join(tempHome, ".cursor", "rules", "rein-interview.mdc")),
+    "expected linked user Cursor rule to be removed",
+  );
+  assert.ok(
+    fs.existsSync(path.join(sourceRepo, ".cursor", "rules", "rein-interview.mdc")),
+    "expected source Cursor rule to remain after user remove",
+  );
+});
+
 test("rein init fails clearly without scope in non-interactive mode", () => {
   assert.throws(
     () =>
@@ -385,6 +566,32 @@ test("rein init fails clearly without scope in non-interactive mode", () => {
   );
 });
 
+test("rein remove preserves AGENTS.md while another AGENTS-consuming tool remains", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-shared-agents-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  const agentsPath = path.join(targetRepo, "AGENTS.md");
+  assert.ok(fs.existsSync(agentsPath), "expected AGENTS.md after install");
+
+  runCli(cliPath, ["remove", "--repo", targetRepo, "--cursor", "--yes"], { cwd: repoRoot });
+  assert.ok(
+    fs.existsSync(agentsPath),
+    "AGENTS.md must survive removing cursor while codex is still installed",
+  );
+  assert.match(fs.readFileSync(agentsPath, "utf8"), /<!-- REIN harness start -->/);
+
+  runCli(cliPath, ["remove", "--repo", targetRepo, "--codex", "--yes"], { cwd: repoRoot });
+  assert.ok(
+    !fs.existsSync(agentsPath),
+    "AGENTS.md must be removed once the last AGENTS-consuming tool is gone",
+  );
+});
+
 test("rein init can run through guided prompts", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interactive-init-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -396,17 +603,16 @@ test("rein init can run through guided prompts", () => {
       ...process.env,
       NO_COLOR: "1",
       REIN_FORCE_INTERACTIVE: "1",
-      REIN_PROMPT_FIXTURES: JSON.stringify([
-        "both",
-        { mode: "repo", path: targetRepo },
-        true,
-        true,
-      ]),
+      REIN_PROMPT_FIXTURES: JSON.stringify(["all", { mode: "repo", path: targetRepo }, true, true]),
     },
   });
 
   assert.ok(fs.existsSync(path.join(targetRepo, "AGENTS.md")));
   assert.ok(fs.existsSync(path.join(targetRepo, "CLAUDE.md")));
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-interview.mdc")),
+    "expected cursor rule to be installed",
+  );
 });
 
 test("rein status defaults to the enclosing repo root from nested directories", () => {
