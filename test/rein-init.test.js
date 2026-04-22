@@ -26,21 +26,25 @@ test("rein init --repo (default) installs Codex surfaces only", () => {
 
   const reinDir = path.join(targetRepo, ".rein");
   const reinCodebaseDir = path.join(targetRepo, ".rein", "codebase");
+  const goSkillPath = path.join(targetRepo, ".codex", "skills", "rein-go", "SKILL.md");
   const skillPath = path.join(targetRepo, ".codex", "skills", "rein-interview", "SKILL.md");
   const inspectSkillPath = path.join(targetRepo, ".codex", "skills", "rein-inspect", "SKILL.md");
   const agentsPath = path.join(targetRepo, "AGENTS.md");
+  const goSkillBody = fs.readFileSync(goSkillPath, "utf8");
   const skillBody = fs.readFileSync(skillPath, "utf8");
   const inspectSkillBody = fs.readFileSync(inspectSkillPath, "utf8");
   const agentsBody = fs.readFileSync(agentsPath, "utf8");
 
   assert.ok(fs.existsSync(reinDir), "expected .rein directory");
   assert.ok(fs.existsSync(reinCodebaseDir), "expected .rein/codebase directory");
+  assert.match(goSkillBody, /Public entrypoint: `rein go`/);
   assert.match(skillBody, /\.rein\/context\//);
   assert.match(skillBody, /\.rein\/specs\//);
   assert.doesNotMatch(skillBody, /\.omx\//);
   assert.match(inspectSkillBody, /\.rein\/codebase\//);
   assert.doesNotMatch(inspectSkillBody, /docs\/codebase\//);
   assert.match(agentsBody, /## REIN/);
+  assert.match(agentsBody, /rein-go/);
   assert.match(agentsBody, /rein-inspect/);
   assert.match(agentsBody, /rein-interview/);
   assert.match(agentsBody, /\.rein\/codebase\//);
@@ -69,9 +73,11 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
   });
 
   const claudePath = path.join(targetRepo, "CLAUDE.md");
+  const goCmdPath = path.join(targetRepo, ".claude", "commands", "rein-go.md");
   const cmdPath = path.join(targetRepo, ".claude", "commands", "rein-interview.md");
   const inspectCmdPath = path.join(targetRepo, ".claude", "commands", "rein-inspect.md");
   const claudeBody = fs.readFileSync(claudePath, "utf8");
+  const goCmdBody = fs.readFileSync(goCmdPath, "utf8");
   const cmdBody = fs.readFileSync(cmdPath, "utf8");
   const inspectCmdBody = fs.readFileSync(inspectCmdPath, "utf8");
 
@@ -83,6 +89,7 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
   assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
 
   assert.match(claudeBody, /## REIN/);
+  assert.match(goCmdBody, /Public entrypoint: `rein go`/);
   assert.match(claudeBody, /rein-inspect/);
   assert.match(claudeBody, /rein-interview/);
   assert.match(cmdBody, /\.rein\/context\//);
@@ -115,9 +122,11 @@ test("rein init --repo --cursor installs Cursor surfaces only", () => {
   });
 
   const agentsPath = path.join(targetRepo, "AGENTS.md");
+  const goRulePath = path.join(targetRepo, ".cursor", "rules", "rein-go.mdc");
   const rulePath = path.join(targetRepo, ".cursor", "rules", "rein-interview.mdc");
   const inspectRulePath = path.join(targetRepo, ".cursor", "rules", "rein-inspect.mdc");
   const agentsBody = fs.readFileSync(agentsPath, "utf8");
+  const goRuleBody = fs.readFileSync(goRulePath, "utf8");
   const ruleBody = fs.readFileSync(rulePath, "utf8");
   const inspectRuleBody = fs.readFileSync(inspectRulePath, "utf8");
 
@@ -129,6 +138,7 @@ test("rein init --repo --cursor installs Cursor surfaces only", () => {
   assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
 
   assert.match(agentsBody, /## REIN/);
+  assert.match(goRuleBody, /Public entrypoint: `rein go`/);
   assert.match(agentsBody, /rein-inspect/);
   assert.match(agentsBody, /rein-interview/);
   assert.match(ruleBody, /\.rein\/context\//);

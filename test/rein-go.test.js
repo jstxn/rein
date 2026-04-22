@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { cliPath, runCli } from "../test-support/support.js";
+import { cliPath, repoRoot, runCli } from "../test-support/support.js";
 
 function parseJson(output) {
   return JSON.parse(output.toString());
@@ -96,4 +96,26 @@ test("rein go consumes a completed interview bundle and readies the plan stage",
   assert.equal(output.stages[1].commandHint, `rein-plan --from-interview ${initState.slug}`);
   assert.equal(output.stages[2].id, "implementation");
   assert.equal(output.stages[2].status, "pending");
+});
+
+test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () => {
+  const codex = fs.readFileSync(
+    path.join(repoRoot, ".codex", "skills", "rein-go", "SKILL.md"),
+    "utf8",
+  );
+  const claude = fs.readFileSync(path.join(repoRoot, ".claude", "commands", "rein-go.md"), "utf8");
+  const cursorRaw = fs.readFileSync(
+    path.join(repoRoot, ".cursor", "rules", "rein-go.mdc"),
+    "utf8",
+  );
+  const cursorBody = cursorRaw.replace(/^---\n[\s\S]*?\n---\n?/, "");
+
+  assert.equal(codex, claude);
+  assert.equal(cursorBody, claude.replace(/^---\n[\s\S]*?\n---\n?/, ""));
+  assert.match(codex, /Public entrypoint: `rein go`/);
+  assert.match(codex, /Wrapper triggers: `\$rein-go` and `\/rein-go`/);
+  assert.match(codex, /rein go --from-interview <slug\|path> --json/);
+  assert.match(codex, /rein-cleanup/);
+  assert.match(codex, /rein-diff-review/);
+  assert.match(codex, /rein-verify/);
 });
