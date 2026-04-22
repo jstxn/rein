@@ -63,7 +63,7 @@ The `--codex`, `--claude`, and `--cursor` flags work with `status`, `update`, an
 | Skills | `.codex/skills/` | `.claude/commands/` | `.cursor/rules/` |
 | Guidance block | `AGENTS.md` | `CLAUDE.md` | `AGENTS.md` |
 
-Both targets install the same 10 skills:
+All targets install the same 10 skills:
 
 - `rein-go`
 - `rein-interview`
