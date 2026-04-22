@@ -14,6 +14,24 @@ import {
   runCliText,
 } from "../test-support/support.js";
 
+function writeLegacyDiffReviewSurfaces(baseDir) {
+  const codexPath = path.join(baseDir, ".codex", "skills", "rein-diff-review", "SKILL.md");
+  const claudePath = path.join(baseDir, ".claude", "commands", "rein-diff-review.md");
+  const cursorPath = path.join(baseDir, ".cursor", "rules", "rein-diff-review.mdc");
+
+  fs.mkdirSync(path.dirname(codexPath), { recursive: true });
+  fs.mkdirSync(path.dirname(claudePath), { recursive: true });
+  fs.mkdirSync(path.dirname(cursorPath), { recursive: true });
+
+  fs.writeFileSync(codexPath, "# legacy codex surface\n", "utf8");
+  fs.writeFileSync(claudePath, "# legacy claude surface\n", "utf8");
+  fs.writeFileSync(
+    cursorPath,
+    "---\ndescription: legacy\nalwaysApply: false\n---\n# legacy cursor surface\n",
+    "utf8",
+  );
+}
+
 test("rein init --repo (default) installs Codex surfaces only", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -26,21 +44,25 @@ test("rein init --repo (default) installs Codex surfaces only", () => {
 
   const reinDir = path.join(targetRepo, ".rein");
   const reinCodebaseDir = path.join(targetRepo, ".rein", "codebase");
+  const goSkillPath = path.join(targetRepo, ".codex", "skills", "rein-go", "SKILL.md");
   const skillPath = path.join(targetRepo, ".codex", "skills", "rein-interview", "SKILL.md");
   const inspectSkillPath = path.join(targetRepo, ".codex", "skills", "rein-inspect", "SKILL.md");
   const agentsPath = path.join(targetRepo, "AGENTS.md");
+  const goSkillBody = fs.readFileSync(goSkillPath, "utf8");
   const skillBody = fs.readFileSync(skillPath, "utf8");
   const inspectSkillBody = fs.readFileSync(inspectSkillPath, "utf8");
   const agentsBody = fs.readFileSync(agentsPath, "utf8");
 
   assert.ok(fs.existsSync(reinDir), "expected .rein directory");
   assert.ok(fs.existsSync(reinCodebaseDir), "expected .rein/codebase directory");
+  assert.match(goSkillBody, /Public entrypoint: `rein go`/);
   assert.match(skillBody, /\.rein\/context\//);
   assert.match(skillBody, /\.rein\/specs\//);
   assert.doesNotMatch(skillBody, /\.omx\//);
   assert.match(inspectSkillBody, /\.rein\/codebase\//);
   assert.doesNotMatch(inspectSkillBody, /docs\/codebase\//);
   assert.match(agentsBody, /## REIN/);
+  assert.match(agentsBody, /rein-go/);
   assert.match(agentsBody, /rein-inspect/);
   assert.match(agentsBody, /rein-interview/);
   assert.match(agentsBody, /\.rein\/codebase\//);
@@ -69,9 +91,11 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
   });
 
   const claudePath = path.join(targetRepo, "CLAUDE.md");
+  const goCmdPath = path.join(targetRepo, ".claude", "commands", "rein-go.md");
   const cmdPath = path.join(targetRepo, ".claude", "commands", "rein-interview.md");
   const inspectCmdPath = path.join(targetRepo, ".claude", "commands", "rein-inspect.md");
   const claudeBody = fs.readFileSync(claudePath, "utf8");
+  const goCmdBody = fs.readFileSync(goCmdPath, "utf8");
   const cmdBody = fs.readFileSync(cmdPath, "utf8");
   const inspectCmdBody = fs.readFileSync(inspectCmdPath, "utf8");
 
@@ -83,6 +107,7 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
   assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
 
   assert.match(claudeBody, /## REIN/);
+  assert.match(goCmdBody, /Public entrypoint: `rein go`/);
   assert.match(claudeBody, /rein-inspect/);
   assert.match(claudeBody, /rein-interview/);
   assert.match(cmdBody, /\.rein\/context\//);
@@ -115,9 +140,11 @@ test("rein init --repo --cursor installs Cursor surfaces only", () => {
   });
 
   const agentsPath = path.join(targetRepo, "AGENTS.md");
+  const goRulePath = path.join(targetRepo, ".cursor", "rules", "rein-go.mdc");
   const rulePath = path.join(targetRepo, ".cursor", "rules", "rein-interview.mdc");
   const inspectRulePath = path.join(targetRepo, ".cursor", "rules", "rein-inspect.mdc");
   const agentsBody = fs.readFileSync(agentsPath, "utf8");
+  const goRuleBody = fs.readFileSync(goRulePath, "utf8");
   const ruleBody = fs.readFileSync(rulePath, "utf8");
   const inspectRuleBody = fs.readFileSync(inspectRulePath, "utf8");
 
@@ -129,6 +156,7 @@ test("rein init --repo --cursor installs Cursor surfaces only", () => {
   assert.ok(fs.existsSync(path.join(targetRepo, "REIN.md")), "expected REIN.md");
 
   assert.match(agentsBody, /## REIN/);
+  assert.match(goRuleBody, /Public entrypoint: `rein go`/);
   assert.match(agentsBody, /rein-inspect/);
   assert.match(agentsBody, /rein-interview/);
   assert.match(ruleBody, /\.rein\/context\//);
@@ -615,6 +643,48 @@ test("rein init can run through guided prompts", () => {
   );
 });
 
+test("rein update migrates legacy rein-diff-review surfaces to rein-review", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-update-legacy-review-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  writeLegacyDiffReviewSurfaces(targetRepo);
+
+  runCli(cliPath, ["update", "--repo", targetRepo, "--codex", "--claude", "--cursor"], {
+    cwd: repoRoot,
+  });
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-diff-review")),
+    "expected legacy codex rein-diff-review surface to be removed during update",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-diff-review.md")),
+    "expected legacy claude rein-diff-review surface to be removed during update",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-diff-review.mdc")),
+    "expected legacy cursor rein-diff-review surface to be removed during update",
+  );
+
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-review", "SKILL.md")),
+    "expected codex rein-review surface after update",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-review.md")),
+    "expected claude rein-review surface after update",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-review.mdc")),
+    "expected cursor rein-review surface after update",
+  );
+});
+
 test("rein status defaults to the enclosing repo root from nested directories", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-status-nested-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -697,6 +767,37 @@ test("rein remove requires --yes in non-interactive mode", () => {
       assert.match(error.stderr.toString(), /Non-interactive remove requires --yes/);
       return true;
     },
+  );
+});
+
+test("rein remove cleans up legacy rein-diff-review surfaces", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-legacy-review-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  writeLegacyDiffReviewSurfaces(targetRepo);
+
+  runCli(
+    cliPath,
+    ["remove", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--yes"],
+    { cwd: repoRoot },
+  );
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-diff-review")),
+    "expected legacy codex rein-diff-review surface to be removed during uninstall",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-diff-review.md")),
+    "expected legacy claude rein-diff-review surface to be removed during uninstall",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-diff-review.mdc")),
+    "expected legacy cursor rein-diff-review surface to be removed during uninstall",
   );
 });
 

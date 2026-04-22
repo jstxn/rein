@@ -710,13 +710,14 @@ test("rein-cleanup prompt copies tell the agent to report naturally", () => {
 
 test("rein Cursor rule bodies stay in sync with Claude command bodies", () => {
   const skills = [
+    "rein-go",
     "rein-interview",
     "rein-inspect",
     "rein-cleanup",
     "rein-triage",
     "rein-plan",
     "rein-scope",
-    "rein-diff-review",
+    "rein-review",
     "rein-verify",
     "rein-retro",
   ];

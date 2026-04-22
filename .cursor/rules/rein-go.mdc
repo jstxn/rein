@@ -1,0 +1,120 @@
+---
+description: Run one task through the full REIN flow from clarification through implementation, cleanup, review, and verification
+alwaysApply: false
+---
+
+# rein-go
+
+Use this when the user wants one REIN-controlled flow instead of manually invoking `rein-interview`, `rein-plan`, implementation, cleanup, review, and verification as separate steps.
+
+`rein-go` is the end-to-end orchestration surface for REIN.
+
+## When To Use
+
+- The user wants one continuous REIN workflow with minimal pauses
+- The task is broad enough to need clarification, planning, implementation, and post-implementation review
+- A completed `rein-interview` bundle already exists and should feed directly into planning and implementation
+- The user explicitly invokes `$rein-go`, `/rein-go`, or asks for a single flow command
+
+## When Not To Use
+
+- The task is already a tiny single-file change
+- The user explicitly wants only one stage, such as interview-only or plan-only work
+- The user wants to skip clarification and planning entirely
+
+## Flow Contract
+
+- Public entrypoint: `rein go`
+- Wrapper triggers: `$rein-go` and `/rein-go`
+- Default posture: keep going with minimal pauses once the flow starts
+- Hard stop on:
+  - dangerous or destructive actions that require approval
+  - missing permissions or blocked tool access
+  - any failed stage: plan, implementation, cleanup, review, or verify
+- Preserve the current install and hook philosophy; do not turn REIN into a hook-first enforcement layer
+
+## Runtime Helper
+
+Start the flow through the runtime:
+
+```bash
+rein go "<task>" --json
+```
+
+If a completed interview bundle already exists:
+
+```bash
+rein go --from-interview <slug|path> --json
+```
+
+Then use:
+
+```bash
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+rein go advance --slug <slug> --stage <stage> --status <completed|failed|blocked> ... --json
+```
+
+Treat the returned flow state as the source of truth for current stage, resume point, stop reason, and downstream stage artifacts.
+
+## Stage Order
+
+1. Interview
+   - Bare `rein go "<task>"` initializes the flow and starts `rein-interview` automatically.
+   - If the flow was started with `--from-interview`, the interview stage is marked completed from the bundle.
+   - While interview is still active, use the normal `rein interview ...` runtime commands and present the user-facing interview exactly like `rein-interview` does, including the clarity score and question frame.
+   - Never answer interview rounds on the user's behalf, never auto-crystallize, and never skip directly to planning in fresh mode.
+   - If `rein go resume --slug <slug> --json` still returns `currentStage: interview` and recommends `rein interview crystallize ...`, the interview is not done yet; crystallize first, then resume again to advance into planning.
+
+2. Plan
+   - The runtime creates a plan artifact from the completed `rein-interview` `result.json`.
+   - Planning is runtime-backed; it should not require a manual wrapper jump just to mark plan complete.
+   - Keep the plan minimum-sufficient and aligned to the interview bundle.
+
+3. Implementation
+   - Implement directly from the runtime plan artifact.
+   - Reuse existing runtime and patterns before inventing new abstractions.
+   - Do not drift into installer rewrites or hook-model changes unless the task explicitly requires them.
+   - When implementation is done, report it back into the runtime with `rein go advance ... --stage implementation --changed-files '<json>'`.
+
+4. Cleanup
+   - Run `rein-cleanup` on the changed-file scope recorded by the implementation stage.
+   - Keep cleanup bounded to the files and mess created by the task.
+   - Report the result back with `rein go advance ... --stage cleanup`.
+
+5. Review
+   - Run `rein-review` on the resulting diff.
+   - Fix any scope drift, debug leftovers, or suspicious test changes before continuing.
+   - Report the result back with `rein go advance ... --stage review`.
+
+6. Verify
+   - Run `rein-verify` before declaring completion.
+   - The flow is not done just because implementation passed.
+   - Report the result back with `rein go advance ... --stage verify`.
+
+## Stage Rules
+
+- Use `rein-interview` runtime commands for persistence and state.
+- Use the `rein go` runtime state as the source of truth for current stage, changed files, and resume behavior.
+- Use completed interview artifacts as the source of truth for downstream planning inputs.
+- Ask the user only when:
+  - a destructive step needs approval
+  - a permission boundary blocks the flow
+  - a critical product decision is still unresolved and cannot be verified from the repo
+- If a stage fails, stop at that stage and report the failure plainly instead of silently continuing.
+- Do not skip cleanup, review, or verification just because the earlier stages succeeded.
+
+## Output
+
+When the flow completes:
+- summarize the completed stages
+- name the key files changed
+- name the commands and tests run
+- state any remaining risks or uncertainties
+
+If the flow stops early:
+- name the failing stage
+- explain what blocked it
+- state the next resume point clearly
+
+Task: {{ARGUMENTS}}

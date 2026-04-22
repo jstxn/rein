@@ -11,6 +11,34 @@ It adds:
 - packaged skills for clarification, inspection, cleanup, triage, verification, and retrospection
 - `.rein/` as the repo-local artifact root for REIN-generated outputs
 
+> [!NOTE]
+> New in REIN: `rein go` is the runtime-backed end-to-end flow. It starts the same user-facing interview that `rein-interview` uses, then carries the task through planning, implementation, cleanup, review, and verification with durable state under `.rein/`.
+
+## New: `rein go`
+
+If you want one REIN-controlled workflow instead of manually invoking each stage, start here:
+
+```bash
+rein go "add a CSV export for invoices"
+```
+
+You can then inspect or continue the flow with:
+
+```bash
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+```
+
+If you are using Codex or Claude Code, the same flow can be exposed through wrapper entrypoints like `$rein-go` and `/rein-go`.
+
+What `rein go` gives you:
+
+- the normal user-facing REIN interview, including the clarity score and interview question flow
+- durable runtime state for the full task under `.rein/`
+- a runtime-backed path from interview -> plan -> implementation -> cleanup -> review -> verify
+- `rein go status`, `rein go resume`, and `rein go advance` for inspecting or continuing the flow
+- the option to start from an already-completed interview bundle with `--from-interview`
+
 ## Install
 
 ```bash
@@ -35,7 +63,17 @@ rein init --repo /path/to/repo --claude
 rein init --user --claude
 ```
 
-Other commands:
+Core flow commands:
+
+```bash
+rein go "..."          # start the runtime-backed REIN go flow from a fresh task
+rein go --from-interview <slug|path> --json
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+rein go advance --slug <slug> --stage <stage> --status <status> --json
+```
+
+Direct stage/runtime commands:
 
 ```bash
 rein status              # show what's installed and whether it's outdated
@@ -61,14 +99,15 @@ The `--codex`, `--claude`, and `--cursor` flags work with `status`, `update`, an
 | Skills | `.codex/skills/` | `.claude/commands/` | `.cursor/rules/` |
 | Guidance block | `AGENTS.md` | `CLAUDE.md` | `AGENTS.md` |
 
-Both targets install the same 9 skills:
+All targets install the same 10 skills:
 
+- `rein-go`
 - `rein-interview`
 - `rein-inspect`
 - `rein-triage`
 - `rein-plan`
 - `rein-scope`
-- `rein-diff-review`
+- `rein-review`
 - `rein-cleanup`
 - `rein-verify`
 - `rein-retro`
@@ -83,13 +122,13 @@ Typical workflow:
 2. Start a new Codex, Claude Code, or Cursor session in that repo.
 3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
 4. Use:
-   - `rein-interview` for vague or underspecified work
-   - `rein interview ...` when you need runtime-backed interview state, status, or artifact output
+   - `rein-go` when you want REIN to carry one task through the full runtime-backed flow
+   - `rein-interview` when you want the clarification stage by itself
    - `rein-inspect` for a durable repo map
    - `rein-triage` before ambiguous or multi-file changes
    - `rein-plan` to break complex work into sequenced steps with checkpoints
    - `rein-scope` when requirements are too large, conflicting, or need negotiation
-   - `rein-diff-review` to self-review your diff before committing
+   - `rein-review` to self-review your diff before committing
    - `rein-cleanup` for cleanup/refactor work after behavior is locked
    - `rein-verify` before declaring completion
    - `rein-retro` after misses or suspicious shortcuts
