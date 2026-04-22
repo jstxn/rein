@@ -11,6 +11,34 @@ It adds:
 - packaged skills for clarification, inspection, cleanup, triage, verification, and retrospection
 - `.rein/` as the repo-local artifact root for REIN-generated outputs
 
+> [!NOTE]
+> New in REIN: `rein go` is the runtime-backed end-to-end flow. It starts the same user-facing interview that `rein-interview` uses, then carries the task through planning, implementation, cleanup, review, and verification with durable state under `.rein/`.
+
+## New: `rein go`
+
+If you want one REIN-controlled workflow instead of manually invoking each stage, start here:
+
+```bash
+rein go "add a CSV export for invoices"
+```
+
+You can then inspect or continue the flow with:
+
+```bash
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+```
+
+If you are using Codex or Claude Code, the same flow can be exposed through wrapper entrypoints like `$rein-go` and `/rein-go`.
+
+What `rein go` gives you:
+
+- the normal user-facing REIN interview, including the clarity score and interview question flow
+- durable runtime state for the full task under `.rein/`
+- a runtime-backed path from interview -> plan -> implementation -> cleanup -> review -> verify
+- `rein go status`, `rein go resume`, and `rein go advance` for inspecting or continuing the flow
+- the option to start from an already-completed interview bundle with `--from-interview`
+
 ## Install
 
 ```bash
@@ -35,7 +63,7 @@ rein init --repo /path/to/repo --claude
 rein init --user --claude
 ```
 
-Other commands:
+Core flow commands:
 
 ```bash
 rein go "..."          # start the runtime-backed REIN go flow from a fresh task
@@ -43,6 +71,11 @@ rein go --from-interview <slug|path> --json
 rein go status --slug <slug> --json
 rein go resume --slug <slug> --json
 rein go advance --slug <slug> --stage <stage> --status <status> --json
+```
+
+Direct stage/runtime commands:
+
+```bash
 rein status              # show what's installed and whether it's outdated
 rein update              # re-install REIN surfaces, replacing existing files
 rein remove              # uninstall REIN from the repo (interactive)
@@ -89,9 +122,8 @@ Typical workflow:
 2. Start a new Codex, Claude Code, or Cursor session in that repo.
 3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
 4. Use:
-   - `rein-go` when you want REIN to carry one task through a runtime-backed flow from clarification through implementation, cleanup, review, and verification
-   - `rein-interview` for vague or underspecified work
-   - `rein interview ...` when you need runtime-backed interview state, status, or artifact output
+   - `rein-go` when you want REIN to carry one task through the full runtime-backed flow
+   - `rein-interview` when you want the clarification stage by itself
    - `rein-inspect` for a durable repo map
    - `rein-triage` before ambiguous or multi-file changes
    - `rein-plan` to break complex work into sequenced steps with checkpoints

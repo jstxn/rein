@@ -80,12 +80,17 @@ test("rein go starts a fresh flow and initializes interview state", () => {
   assert.equal(output.resumeFrom, "interview");
   assert.equal(output.status, "in_progress");
   assert.equal(output.nextAction, "continue-interview");
+  assert.equal(output.interviewGuidance.suggestedMode, "continue");
+  assert.match(output.interviewGuidance.suggestedQuestion, /out of scope/);
   assert.equal(output.stageResults.interview.status, "ready");
   assert.equal(output.stageSummary.ready, 1);
   assert.equal(output.stageSummary.pending, 5);
   assert.ok(fs.existsSync(output.artifactPaths.state));
   assert.ok(fs.existsSync(output.sourceInterview.statePath));
-  assert.match(output.recommendedCommand, /rein interview next --slug build-rein-go --json/);
+  assert.match(
+    output.recommendedCommand,
+    /rein interview update-round --slug build-rein-go --round 1 \.\.\. --json/,
+  );
 });
 
 test("rein go from an interview bundle completes planning and readies implementation", () => {
@@ -160,6 +165,51 @@ test("rein go resume advances a completed interview into planning and implementa
   assert.ok(fs.existsSync(resumed.artifactPaths.plan));
 });
 
+test("rein go resume stays in interview and signals crystallize when the interview is ready", () => {
+  const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-awaiting-crystallize-"));
+  const started = parseJson(
+    runCli(cliPath, ["go", "Build rein go awaiting crystallize", "--json"], { cwd: targetRepo }),
+  );
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "update-round",
+      "--slug",
+      started.slug,
+      "--round",
+      "1",
+      "--target",
+      "intent",
+      "--question",
+      "Why now?",
+      "--answer",
+      "Need one flow command.",
+      "--scores",
+      '{"intent":0.95,"outcome":0.9,"scope":0.9,"constraints":0.9,"success":0.9,"context":0.9}',
+      "--non-goals-explicit",
+      "--decision-boundaries-explicit",
+      "--pressure-pass-complete",
+      "--json",
+    ],
+    { cwd: targetRepo },
+  );
+
+  const resumed = parseJson(
+    runCli(cliPath, ["go", "resume", "--slug", started.slug, "--json"], { cwd: targetRepo }),
+  );
+
+  assert.equal(resumed.currentStage, "interview");
+  assert.equal(resumed.nextAction, "awaiting-crystallize");
+  assert.equal(resumed.interviewGuidance.nextAction, "crystallize");
+  assert.equal(resumed.interviewGuidance.suggestedMode, "crystallize");
+  assert.match(
+    resumed.recommendedCommand,
+    /rein interview crystallize --slug build-rein-go-awaiting-crystallize --summary '<json>' --json/,
+  );
+});
+
 test("rein go status reads the persisted flow state", () => {
   const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-status-"));
   const started = parseJson(
@@ -172,6 +222,7 @@ test("rein go status reads the persisted flow state", () => {
 
   assert.equal(status.slug, started.slug);
   assert.equal(status.currentStage, "interview");
+  assert.equal(status.interviewGuidance.suggestedMode, "continue");
   assert.equal(status.stageResults.interview.status, "ready");
 });
 
@@ -380,10 +431,7 @@ test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () =
     "utf8",
   );
   const claude = fs.readFileSync(path.join(repoRoot, ".claude", "commands", "rein-go.md"), "utf8");
-  const cursorRaw = fs.readFileSync(
-    path.join(repoRoot, ".cursor", "rules", "rein-go.mdc"),
-    "utf8",
-  );
+  const cursorRaw = fs.readFileSync(path.join(repoRoot, ".cursor", "rules", "rein-go.mdc"), "utf8");
   const cursorBody = cursorRaw.replace(/^---\n[\s\S]*?\n---\n?/, "");
 
   assert.equal(codex, claude);
@@ -391,12 +439,33 @@ test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () =
   assert.match(codex, /Public entrypoint: `rein go`/);
   assert.match(codex, /Wrapper triggers: `\$rein-go` and `\/rein-go`/);
   assert.match(codex, /rein go --from-interview <slug\|path> --json/);
+  assert.match(codex, /present the user-facing interview exactly like `rein-interview` does/);
+  assert.match(codex, /Never answer interview rounds on the user's behalf/);
+  assert.match(
+    codex,
+    /still returns `currentStage: interview` and recommends `rein interview crystallize/,
+  );
   assert.match(codex, /rein go status --slug <slug> --json/);
   assert.match(codex, /rein go resume --slug <slug> --json/);
-  assert.match(codex, /rein go advance --slug <slug> --stage <stage> --status <completed\|failed\|blocked> \.\.\. --json/);
+  assert.match(
+    codex,
+    /rein go advance --slug <slug> --stage <stage> --status <completed\|failed\|blocked> \.\.\. --json/,
+  );
   assert.match(codex, /rein-cleanup/);
   assert.match(codex, /rein-review/);
   assert.match(codex, /rein-verify/);
   assert.doesNotMatch(codex, /diff review/);
   assert.doesNotMatch(codex, /rein-diff-review/);
+});
+
+test("rein go text output starts with the normal interview frame in fresh mode", () => {
+  const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-text-interview-"));
+  const output = runCli(cliPath, ["go", "Build rein go text interview"], {
+    cwd: targetRepo,
+  }).toString();
+
+  assert.match(output, /^\[ Interview \]$/m);
+  assert.match(output, /\| Current clarity: 0%/);
+  assert.match(output, /\| Question/);
+  assert.match(output, /What should stay out of scope so this work stops drifting outward\?/);
 });

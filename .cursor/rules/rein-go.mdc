@@ -62,8 +62,9 @@ Treat the returned flow state as the source of truth for current stage, resume p
 1. Interview
    - Bare `rein go "<task>"` initializes the flow and starts `rein-interview` automatically.
    - If the flow was started with `--from-interview`, the interview stage is marked completed from the bundle.
-   - While interview is still active, use the normal `rein interview ...` runtime commands.
-   - After crystallization, call `rein go resume --slug <slug> --json` to let the go runtime advance into planning.
+   - While interview is still active, use the normal `rein interview ...` runtime commands and present the user-facing interview exactly like `rein-interview` does, including the clarity score and question frame.
+   - Never answer interview rounds on the user's behalf, never auto-crystallize, and never skip directly to planning in fresh mode.
+   - If `rein go resume --slug <slug> --json` still returns `currentStage: interview` and recommends `rein interview crystallize ...`, the interview is not done yet; crystallize first, then resume again to advance into planning.
 
 2. Plan
    - The runtime creates a plan artifact from the completed `rein-interview` `result.json`.
