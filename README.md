@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="https://i.ibb.co/tTg9bJgh/rein-no-star.png" alt="rein-no-star" border="0">
+   <img src="https://i.ibb.co/XkVZ2Y4j/rein-go.jpg" alt="rein-go" border="0">
 </p>
 
 # REIN (Regulated Execution and Inference Navigation)
