@@ -1,5 +1,7 @@
 # AGENTS.md
 
+See `PRESSURE.md` for the regulated-pressure companion protocol.
+
 For code modifications in this repo:
 
 - follow `REIN.md`

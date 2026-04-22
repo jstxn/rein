@@ -59,6 +59,7 @@ If a REIN workflow creates durable repo-local outputs, prefer `.rein/` over ad h
 
 REIN works through:
 
+- `PRESSURE.md`
 - this protocol document
 - companion skills
 - `AGENTS.md` routing

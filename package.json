@@ -16,6 +16,7 @@
     "lib",
     "REIN.md",
     "AGENTS.md",
+    "PRESSURE.md",
     ".codex/skills",
     ".claude/commands",
     ".cursor/rules",
