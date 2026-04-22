@@ -71,7 +71,7 @@ All targets install the same 10 skills:
 - `rein-triage`
 - `rein-plan`
 - `rein-scope`
-- `rein-diff-review`
+- `rein-review`
 - `rein-cleanup`
 - `rein-verify`
 - `rein-retro`
@@ -93,7 +93,7 @@ Typical workflow:
    - `rein-triage` before ambiguous or multi-file changes
    - `rein-plan` to break complex work into sequenced steps with checkpoints
    - `rein-scope` when requirements are too large, conflicting, or need negotiation
-   - `rein-diff-review` to self-review your diff before committing
+   - `rein-review` to self-review your diff before committing
    - `rein-cleanup` for cleanup/refactor work after behavior is locked
    - `rein-verify` before declaring completion
    - `rein-retro` after misses or suspicious shortcuts

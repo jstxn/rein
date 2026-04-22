@@ -14,6 +14,24 @@ import {
   runCliText,
 } from "../test-support/support.js";
 
+function writeLegacyDiffReviewSurfaces(baseDir) {
+  const codexPath = path.join(baseDir, ".codex", "skills", "rein-diff-review", "SKILL.md");
+  const claudePath = path.join(baseDir, ".claude", "commands", "rein-diff-review.md");
+  const cursorPath = path.join(baseDir, ".cursor", "rules", "rein-diff-review.mdc");
+
+  fs.mkdirSync(path.dirname(codexPath), { recursive: true });
+  fs.mkdirSync(path.dirname(claudePath), { recursive: true });
+  fs.mkdirSync(path.dirname(cursorPath), { recursive: true });
+
+  fs.writeFileSync(codexPath, "# legacy codex surface\n", "utf8");
+  fs.writeFileSync(claudePath, "# legacy claude surface\n", "utf8");
+  fs.writeFileSync(
+    cursorPath,
+    "---\ndescription: legacy\nalwaysApply: false\n---\n# legacy cursor surface\n",
+    "utf8",
+  );
+}
+
 test("rein init --repo (default) installs Codex surfaces only", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -625,6 +643,48 @@ test("rein init can run through guided prompts", () => {
   );
 });
 
+test("rein update migrates legacy rein-diff-review surfaces to rein-review", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-update-legacy-review-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  writeLegacyDiffReviewSurfaces(targetRepo);
+
+  runCli(cliPath, ["update", "--repo", targetRepo, "--codex", "--claude", "--cursor"], {
+    cwd: repoRoot,
+  });
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-diff-review")),
+    "expected legacy codex rein-diff-review surface to be removed during update",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-diff-review.md")),
+    "expected legacy claude rein-diff-review surface to be removed during update",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-diff-review.mdc")),
+    "expected legacy cursor rein-diff-review surface to be removed during update",
+  );
+
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-review", "SKILL.md")),
+    "expected codex rein-review surface after update",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-review.md")),
+    "expected claude rein-review surface after update",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-review.mdc")),
+    "expected cursor rein-review surface after update",
+  );
+});
+
 test("rein status defaults to the enclosing repo root from nested directories", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-status-nested-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -707,6 +767,37 @@ test("rein remove requires --yes in non-interactive mode", () => {
       assert.match(error.stderr.toString(), /Non-interactive remove requires --yes/);
       return true;
     },
+  );
+});
+
+test("rein remove cleans up legacy rein-diff-review surfaces", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-legacy-review-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--force"], {
+    cwd: repoRoot,
+  });
+
+  writeLegacyDiffReviewSurfaces(targetRepo);
+
+  runCli(
+    cliPath,
+    ["remove", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--yes"],
+    { cwd: repoRoot },
+  );
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-diff-review")),
+    "expected legacy codex rein-diff-review surface to be removed during uninstall",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands", "rein-diff-review.md")),
+    "expected legacy claude rein-diff-review surface to be removed during uninstall",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".cursor", "rules", "rein-diff-review.mdc")),
+    "expected legacy cursor rein-diff-review surface to be removed during uninstall",
   );
 });
 

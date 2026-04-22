@@ -41,7 +41,7 @@ REIN works best when the protocol is paired with the right Codex skills:
 - use `rein-triage` before ambiguous or multi-file work
 - use `rein-plan` to break complex work into sequenced steps with checkpoints
 - use `rein-scope` when requirements are too large, conflicting, or need negotiation
-- use `rein-diff-review` to self-review your diff before committing
+- use `rein-review` to self-review your diff before committing
 - use `rein-cleanup` for cleanup, deslop, or refactor work after behavior is locked
 - use `rein-verify` before declaring completion
 - use `rein-retro` after misses, regressions, or suspicious shortcuts

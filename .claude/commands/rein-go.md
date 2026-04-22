@@ -6,7 +6,7 @@ argument-hint: "[--from-interview <slug|path>] <task or idea>"
 
 # rein-go
 
-Use this when the user wants one REIN-controlled flow instead of manually invoking `rein-interview`, `rein-plan`, implementation, cleanup, diff review, and verification as separate steps.
+Use this when the user wants one REIN-controlled flow instead of manually invoking `rein-interview`, `rein-plan`, implementation, cleanup, review, and verification as separate steps.
 
 `rein-go` is the end-to-end orchestration surface for REIN.
 
@@ -70,8 +70,8 @@ Treat the returned manifest as structure and stop-policy guidance, not as a subs
    - Run `rein-cleanup` on the changed-file scope created by the implementation stage.
    - Keep cleanup bounded to the files and mess created by the task.
 
-5. Diff Review
-   - Run `rein-diff-review` on the resulting diff.
+5. Review
+   - Run `rein-review` on the resulting diff.
    - Fix any scope drift, debug leftovers, or suspicious test changes before continuing.
 
 6. Verify
@@ -87,7 +87,7 @@ Treat the returned manifest as structure and stop-policy guidance, not as a subs
   - a permission boundary blocks the flow
   - a critical product decision is still unresolved and cannot be verified from the repo
 - If a stage fails, stop at that stage and report the failure plainly instead of silently continuing.
-- Do not skip cleanup, diff review, or verification just because the earlier stages succeeded.
+- Do not skip cleanup, review, or verification just because the earlier stages succeeded.
 
 ## Output
 

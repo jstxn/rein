@@ -1,9 +1,9 @@
 ---
-name: rein-diff-review
+name: rein-review
 description: Use before committing. Self-reviews the current diff for unrelated changes, debug leftovers, test weakening, and scope drift.
 ---
 
-# rein-diff-review
+# rein-review
 
 Use this after implementation and before committing to review your own diff for problems that verification commands alone will not catch.
 

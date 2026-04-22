@@ -116,6 +116,6 @@ test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () =
   assert.match(codex, /Wrapper triggers: `\$rein-go` and `\/rein-go`/);
   assert.match(codex, /rein go --from-interview <slug\|path> --json/);
   assert.match(codex, /rein-cleanup/);
-  assert.match(codex, /rein-diff-review/);
+  assert.match(codex, /rein-review/);
   assert.match(codex, /rein-verify/);
 });

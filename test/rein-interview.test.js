@@ -717,7 +717,7 @@ test("rein Cursor rule bodies stay in sync with Claude command bodies", () => {
     "rein-triage",
     "rein-plan",
     "rein-scope",
-    "rein-diff-review",
+    "rein-review",
     "rein-verify",
     "rein-retro",
   ];
