@@ -40,6 +40,9 @@ test("rein go builds a fresh flow manifest from a task description", () => {
   assert.match(output.stages[0].commandHint, /rein interview init --idea/);
   assert.equal(output.stages[1].id, "plan");
   assert.equal(output.stages[1].status, "blocked");
+  assert.equal(output.stages[4].id, "review");
+  assert.equal(output.stages[4].status, "blocked");
+  assert.equal(output.stages[4].commandHint, "rein-review");
 });
 
 test("rein go consumes a completed interview bundle and readies the plan stage", () => {
@@ -96,6 +99,9 @@ test("rein go consumes a completed interview bundle and readies the plan stage",
   assert.equal(output.stages[1].commandHint, `rein-plan --from-interview ${initState.slug}`);
   assert.equal(output.stages[2].id, "implementation");
   assert.equal(output.stages[2].status, "pending");
+  assert.equal(output.stages[4].id, "review");
+  assert.equal(output.stages[4].status, "pending");
+  assert.equal(output.stages[4].commandHint, "rein-review");
 });
 
 test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () => {
@@ -118,4 +124,6 @@ test("rein-go prompt copies stay aligned across Codex, Claude, and Cursor", () =
   assert.match(codex, /rein-cleanup/);
   assert.match(codex, /rein-review/);
   assert.match(codex, /rein-verify/);
+  assert.doesNotMatch(codex, /diff review/);
+  assert.doesNotMatch(codex, /rein-diff-review/);
 });

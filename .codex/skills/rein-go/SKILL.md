@@ -1,6 +1,6 @@
 ---
 name: rein-go
-description: Run one task through the full REIN flow from clarification through implementation, cleanup, diff review, and verification
+description: Run one task through the full REIN flow from clarification through implementation, cleanup, review, and verification
 argument-hint: "[--from-interview <slug|path>] <task or idea>"
 ---
 
@@ -31,7 +31,7 @@ Use this when the user wants one REIN-controlled flow instead of manually invoki
 - Hard stop on:
   - dangerous or destructive actions that require approval
   - missing permissions or blocked tool access
-  - any failed stage: plan, implementation, cleanup, diff review, or verify
+  - any failed stage: plan, implementation, cleanup, review, or verify
 - Preserve the current install and hook philosophy; do not turn REIN into a hook-first enforcement layer
 
 ## Runtime Helper
