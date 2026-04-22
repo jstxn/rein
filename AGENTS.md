@@ -1,10 +1,11 @@
 # AGENTS.md
 
-See `PRESSURE.md` for the regulated-pressure companion protocol.
+Primary protocol: follow `REIN.md`.
+Companion protocol: use `PRESSURE.md` for regulated-pressure execution and evidence discipline.
+Precedence: if guidance overlaps or conflicts, `REIN.md` is the source of truth.
 
 For code modifications in this repo:
 
-- follow `REIN.md`
 - use `rein-interview` when requirements are vague, broad, or missing boundaries
 - use `rein-triage` before ambiguous or multi-file work
 - use `rein-plan` to break complex work into sequenced steps with checkpoints
