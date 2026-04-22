@@ -781,11 +781,9 @@ test("rein remove cleans up legacy rein-diff-review surfaces", () => {
 
   writeLegacyDiffReviewSurfaces(targetRepo);
 
-  runCli(
-    cliPath,
-    ["remove", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--yes"],
-    { cwd: repoRoot },
-  );
+  runCli(cliPath, ["remove", "--repo", targetRepo, "--codex", "--claude", "--cursor", "--yes"], {
+    cwd: repoRoot,
+  });
 
   assert.ok(
     !fs.existsSync(path.join(targetRepo, ".codex", "skills", "rein-diff-review")),
