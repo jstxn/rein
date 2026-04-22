@@ -38,8 +38,11 @@ rein init --user --claude
 Other commands:
 
 ```bash
-rein go "..."          # describe the full REIN go flow from a fresh task
+rein go "..."          # start the runtime-backed REIN go flow from a fresh task
 rein go --from-interview <slug|path> --json
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+rein go advance --slug <slug> --stage <stage> --status <status> --json
 rein status              # show what's installed and whether it's outdated
 rein update              # re-install REIN surfaces, replacing existing files
 rein remove              # uninstall REIN from the repo (interactive)
@@ -86,7 +89,7 @@ Typical workflow:
 2. Start a new Codex, Claude Code, or Cursor session in that repo.
 3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
 4. Use:
-   - `rein-go` when you want REIN to carry one task from clarification through implementation, cleanup, diff review, and verification
+   - `rein-go` when you want REIN to carry one task through a runtime-backed flow from clarification through implementation, cleanup, review, and verification
    - `rein-interview` for vague or underspecified work
    - `rein interview ...` when you need runtime-backed interview state, status, or artifact output
    - `rein-inspect` for a durable repo map

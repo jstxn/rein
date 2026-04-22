@@ -35,7 +35,7 @@ Use this when the user wants one REIN-controlled flow instead of manually invoki
 
 ## Runtime Helper
 
-Start by asking the runtime for the current flow shape:
+Start the flow through the runtime:
 
 ```bash
 rein go "<task>" --json
@@ -47,40 +47,55 @@ If a completed interview bundle already exists:
 rein go --from-interview <slug|path> --json
 ```
 
-Treat the returned manifest as structure and stop-policy guidance, not as a substitute for your own engineering judgment.
+Then use:
+
+```bash
+rein go status --slug <slug> --json
+rein go resume --slug <slug> --json
+rein go advance --slug <slug> --stage <stage> --status <completed|failed|blocked> ... --json
+```
+
+Treat the returned flow state as the source of truth for current stage, resume point, stop reason, and downstream stage artifacts.
 
 ## Stage Order
 
 1. Interview
-   - If the manifest mode is `fresh`, run the normal `rein-interview` flow first.
-   - If the manifest mode is `from-interview`, treat the interview bundle as the source of truth and skip directly to planning.
+   - Bare `rein go "<task>"` initializes the flow and starts `rein-interview` automatically.
+   - If the flow was started with `--from-interview`, the interview stage is marked completed from the bundle.
+   - While interview is still active, use the normal `rein interview ...` runtime commands.
+   - After crystallization, call `rein go resume --slug <slug> --json` to let the go runtime advance into planning.
 
 2. Plan
-   - Consume the completed `rein-interview` `result.json`.
-   - Run `rein-plan` before implementation.
-   - Keep the plan minimum-sufficient and aligned to the artifact.
+   - The runtime creates a plan artifact from the completed `rein-interview` `result.json`.
+   - Planning is runtime-backed; it should not require a manual wrapper jump just to mark plan complete.
+   - Keep the plan minimum-sufficient and aligned to the interview bundle.
 
 3. Implementation
-   - Implement directly from the plan.
+   - Implement directly from the runtime plan artifact.
    - Reuse existing runtime and patterns before inventing new abstractions.
    - Do not drift into installer rewrites or hook-model changes unless the task explicitly requires them.
+   - When implementation is done, report it back into the runtime with `rein go advance ... --stage implementation --changed-files '<json>'`.
 
 4. Cleanup
-   - Run `rein-cleanup` on the changed-file scope created by the implementation stage.
+   - Run `rein-cleanup` on the changed-file scope recorded by the implementation stage.
    - Keep cleanup bounded to the files and mess created by the task.
+   - Report the result back with `rein go advance ... --stage cleanup`.
 
 5. Review
    - Run `rein-review` on the resulting diff.
    - Fix any scope drift, debug leftovers, or suspicious test changes before continuing.
+   - Report the result back with `rein go advance ... --stage review`.
 
 6. Verify
    - Run `rein-verify` before declaring completion.
    - The flow is not done just because implementation passed.
+   - Report the result back with `rein go advance ... --stage verify`.
 
 ## Stage Rules
 
 - Use `rein-interview` runtime commands for persistence and state.
-- Use completed interview artifacts as the primary source of truth for downstream planning.
+- Use the `rein go` runtime state as the source of truth for current stage, changed files, and resume behavior.
+- Use completed interview artifacts as the source of truth for downstream planning inputs.
 - Ask the user only when:
   - a destructive step needs approval
   - a permission boundary blocks the flow
