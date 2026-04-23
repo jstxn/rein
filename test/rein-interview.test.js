@@ -33,6 +33,13 @@ function summaryPayload() {
   });
 }
 
+function readReadmeCrystallizeSummary() {
+  const readme = fs.readFileSync(path.join(repoRoot, "README.md"), "utf8");
+  const match = readme.match(/rein interview crystallize --slug my-topic --summary '([^']+)'/);
+  assert.ok(match, "expected README crystallize example with a quoted summary payload");
+  return match[1];
+}
+
 test("rein interview end-to-end flow writes state, status, resume, and spec bundle", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-e2e-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -172,6 +179,59 @@ test("rein interview end-to-end flow writes state, status, resume, and spec bund
   assert.equal(handoff.recommendedSkill, "rein-plan");
   assert.equal(handoff.recommendedSkillInvocation, `rein-plan --from-interview ${initState.slug}`);
   assert.equal(handoff.sourceResult, crystallized.artifactPaths.result);
+});
+
+test("README crystallize example uses a runtime-valid summary payload", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-readme-"));
+  const targetRepo = path.join(tempRoot, "target");
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(cliPath, ["interview", "init", "--slug", "my-topic", "--idea", "README example"], {
+    cwd: targetRepo,
+  });
+
+  runCli(
+    cliPath,
+    [
+      "interview",
+      "update-round",
+      "--slug",
+      "my-topic",
+      "--round",
+      "1",
+      "--target",
+      "intent",
+      "--question",
+      "What should the example prove?",
+      "--answer",
+      "The README crystallize payload should be accepted by the runtime.",
+      "--scores",
+      '{"intent":0.95,"outcome":0.95,"scope":0.9,"constraints":0.9,"success":0.9,"context":0.9}',
+      "--non-goals-explicit",
+      "--decision-boundaries-explicit",
+      "--pressure-pass-complete",
+    ],
+    { cwd: targetRepo },
+  );
+
+  const crystallized = parseJson(
+    runCli(
+      cliPath,
+      [
+        "interview",
+        "crystallize",
+        "--slug",
+        "my-topic",
+        "--summary",
+        readReadmeCrystallizeSummary(),
+        "--json",
+      ],
+      { cwd: targetRepo },
+    ),
+  );
+
+  assert.equal(crystallized.status, "completed");
+  assert.equal(crystallized.executionBridge[0], "plan");
 });
 
 test("rein interview enforces round ordering and crystallization readiness", () => {

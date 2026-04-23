@@ -770,6 +770,27 @@ test("rein remove requires --yes in non-interactive mode", () => {
   );
 });
 
+test("rein remove with explicit tool flags refuses uninstalled repositories", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-uninstalled-"));
+  const targetRepo = path.join(tempRoot, "target");
+  const reinPath = path.join(targetRepo, "REIN.md");
+  fs.mkdirSync(targetRepo, { recursive: true });
+  fs.writeFileSync(reinPath, "User-authored REIN notes\n", "utf8");
+
+  assert.throws(
+    () =>
+      runCli(cliPath, ["remove", "--repo", targetRepo, "--codex", "--yes"], {
+        cwd: repoRoot,
+      }),
+    (error) => {
+      assert.match(error.stderr.toString(), /No REIN installation detected/);
+      return true;
+    },
+  );
+
+  assert.equal(fs.readFileSync(reinPath, "utf8"), "User-authored REIN notes\n");
+});
+
 test("rein remove cleans up legacy rein-diff-review surfaces", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-remove-legacy-review-"));
   const targetRepo = path.join(tempRoot, "target");

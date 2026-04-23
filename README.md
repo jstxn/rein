@@ -83,7 +83,7 @@ rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts
 rein interview init --idea "..."             # start a durable interview
 rein interview status --slug my-topic        # inspect live interview state
 rein interview resume --slug my-topic        # resume a saved interview
-rein interview crystallize --slug my-topic --summary '{"intent":"...","desiredOutcome":"..."}'
+rein interview crystallize --slug my-topic --summary '{"intent":"Clarify the implementation scope","desiredOutcome":"A verified implementation plan","transcriptSummary":"The interview captured scope, constraints, and acceptance criteria.","acceptanceCriteria":["Required checks are documented"],"constraints":["Keep the change scoped"],"decisionBoundaries":["Decide whether to plan or implement next"],"executionBridge":["plan"],"inScope":["Crystallize the interview result"],"outOfScope":["Implementing the follow-up task"],"technicalContext":["Artifacts are written under .rein/specs"]}'
 ```
 
 The `--codex`, `--claude`, and `--cursor` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.

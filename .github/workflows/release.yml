@@ -20,6 +20,21 @@ jobs:
           node-version: "20.12.0"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Install dependencies
+        run: npm install --package-lock=false
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: node --test
+
+      - name: Dry-run package
+        run: npm pack --dry-run
+
       - name: Publish to npm
         run: npm publish --access public
         env:
