@@ -64,7 +64,6 @@ Normal round:
 
 ```text
 [ Interview ]
-| Progress: Round X of Y
 | Phase: clarifying structure
 
 | Current clarity: N%
@@ -81,7 +80,6 @@ Open-question variant:
 
 ```text
 [ Interview ]
-| Progress: Round X of Y
 | Phase: clarifying structure
 
 | Current clarity: N%
@@ -94,7 +92,6 @@ Review:
 
 ```text
 [ Review ]
-| Progress: Round X of Y
 | Phase: confirming summary
 
 | Current clarity: N%
@@ -107,7 +104,6 @@ Handoff:
 
 ```text
 [ Handoff ]
-| Progress: Round X of Y
 | Phase: preparing handoff
 
 | Status: ready for handoff
@@ -119,7 +115,7 @@ Handoff:
 ## Formatting Rules
 
 - Always preserve blank lines between sections exactly as shown.
-- Keep `Progress` round-based: `Round X of Y`.
+- Do not show round counters or max-round counts in the visible interview frame.
 - Keep phase names as lowercase phrases.
 - For normal rounds and review, show `Current clarity: N%`.
 - For handoff, replace clarity with `Status: ready for handoff`.

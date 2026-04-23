@@ -40,6 +40,11 @@ function readReadmeCrystallizeSummary() {
   return match[1];
 }
 
+function assertNoVisibleRoundCounter(output) {
+  assert.doesNotMatch(output, /\| Progress:/);
+  assert.doesNotMatch(output, /Round \d+ of \d+/);
+}
+
 test("rein interview end-to-end flow writes state, status, resume, and spec bundle", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-interview-e2e-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -572,7 +577,7 @@ test("rein interview human-readable runtime output follows the presentation cont
     weakestDimension: "scope",
   });
   assert.match(statusOutput, /^\[ Interview \]$/m);
-  assert.match(statusOutput, /\| Progress: Round 2 of 5/);
+  assertNoVisibleRoundCounter(statusOutput);
   assert.match(statusOutput, /\| Phase: clarifying structure/);
   assert.match(statusOutput, /\n\n\| Current clarity: 61%\n\n/);
   assert.match(
@@ -597,7 +602,7 @@ test("rein interview human-readable runtime output follows the presentation cont
     unresolvedReadinessGates: [],
   });
   assert.match(reviewOutput, /^\[ Review \]$/m);
-  assert.match(reviewOutput, /\| Progress: Round 5 of 5/);
+  assertNoVisibleRoundCounter(reviewOutput);
   assert.match(reviewOutput, /\| Phase: confirming summary/);
   assert.match(reviewOutput, /\n\n\| Current clarity: 88%\n\n/);
   assert.match(
@@ -652,7 +657,7 @@ test("rein interview human-readable runtime output follows the presentation cont
     maxRounds: 5,
   });
   assert.match(handoffOutput, /^\[ Handoff \]$/m);
-  assert.match(handoffOutput, /\| Progress: Round 5 of 5/);
+  assertNoVisibleRoundCounter(handoffOutput);
   assert.match(handoffOutput, /\| Phase: preparing handoff/);
   assert.match(handoffOutput, /\n\n\| Status: ready for handoff\n\n/);
   assert.match(
