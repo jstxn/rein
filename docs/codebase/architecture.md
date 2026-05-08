@@ -23,6 +23,8 @@
 - `docs/codebase/` contains checked-in reference documentation for this repository itself.
 - `resources/` currently contains the research PDF tracked through Git LFS.
 - `.rein/` and `.omc/` are repo-local working artifacts rather than published package surfaces.
+- `.rein/index/` is the local, rebuildable evidence vector index produced by `rein index build`.
+- `rein go` consumes `.rein/index/` opportunistically when it writes plan and stage instruction artifacts.
 
 ## Patterns And Conventions
 - The repo favors repo-local Codex integration over wrapper tooling.
@@ -30,17 +32,22 @@
 - The protocol docs and their companion skills are treated as first-class product assets, not supporting afterthoughts.
 - The installer is conservative by default: it skips existing files unless forced and writes merge notes instead of overwriting an existing hooks config.
 - The repo distinguishes shipped REIN harness surfaces from local working artifacts and retained research context.
+- The evidence index treats source artifacts as authoritative and stores only rebuildable retrieval state.
+- Evidence retrieval is non-blocking: missing or stale indexes are recorded in generated artifacts without stopping the workflow.
 
 ## Dependencies And Touchpoints
 - The package depends on Node 18+ for the installer and CLI runtime.
 - `README.md` explains the intended public shape of the repo.
 - `package.json` defines what will be included in a published package; it includes `.codex/` skills, but not `.rein/` or `.omc/`.
+- `lib/core/evidence-index.js` backs `rein index build/query/status` without external vector database dependencies.
 - `.gitattributes` routes `resources/fear_regulated_pressure_report.pdf` through Git LFS filters.
 - `docs/codebase/` is checked into this repo for orientation, but it is not the packaged output target of `rein-inspect`.
 
 ## Findings
 - Observed: The published package surface is narrow. `package.json` includes `bin`, `lib`, protocol docs, `.codex` skills, and `README.md`.
 - Observed: `.rein/` is the intended root for REIN-managed planning/spec artifacts such as rein-interview outputs, but these paths are not listed in `package.json`.
+- Observed: `.rein/index/` is ignored local state and can be rebuilt from protocol, skill, documentation, interview, spec, and go-stage artifacts.
+- Observed: Generated `rein go` artifacts now include evidence context from `rein index` when available, including status, scores, pressure signals, source paths, and excerpts.
 - Observed: `docs/codebase/` is a maintained documentation surface for this repository, separate from `.rein/codebase/` in installed target repos.
 - Observed: `.omc/` contains local memory and mission-state files and is not part of the published package.
 - Observed: The repo still contains legacy `.omx/` artifacts from earlier runs alongside the new `.rein/` root.

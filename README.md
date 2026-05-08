@@ -10,6 +10,7 @@ It adds:
 - `REIN.md` for regulated execution and inference guidance
 - packaged skills for clarification, inspection, cleanup, triage, verification, and retrospection
 - `.rein/` as the repo-local artifact root for REIN-generated outputs
+- `rein index` for a local, rebuildable evidence vector index over REIN artifacts
 
 > [!NOTE]
 > New in REIN: `rein go` is the runtime-backed end-to-end flow. It starts the same user-facing interview that `rein-interview` uses, then carries the task through planning, implementation, cleanup, review, and verification with durable state under `.rein/`.
@@ -38,6 +39,21 @@ What `rein go` gives you:
 - a runtime-backed path from interview -> plan -> implementation -> cleanup -> review -> verify
 - `rein go status`, `rein go resume`, and `rein go advance` for inspecting or continuing the flow
 - the option to start from an already-completed interview bundle with `--from-interview`
+- automatic evidence context in plan and stage artifacts when a local `rein index` is available
+
+## New: `rein index`
+
+REIN can build a local evidence index from protocol docs, skills, codebase maps, completed interviews, specs, and `rein go` stage artifacts:
+
+```bash
+rein index build
+rein index query "what constraints matter before I edit this?"
+rein index status
+```
+
+The index lives under `.rein/index/` and is always rebuildable from source artifacts. It uses deterministic local feature-hash vectors, BM25 lexical scoring, and REIN-specific pressure signals like constraints, acceptance criteria, decision boundaries, rejected alternatives, and verification notes. Query results include source paths, line numbers, and stale-source filtering so retrieved context stays evidence, not hidden state.
+
+When the index exists, `rein go` automatically queries it while generating the plan and later stage instruction artifacts. If the index is missing or stale, the flow still proceeds, but the generated artifact records that evidence status and filters stale sources instead of treating old retrieval results as active context.
 
 ## Install
 
@@ -71,6 +87,9 @@ rein go --from-interview <slug|path> --json
 rein go status --slug <slug> --json
 rein go resume --slug <slug> --json
 rein go advance --slug <slug> --stage <stage> --status <status> --json
+rein index build
+rein index query "what prior constraints apply here?" --json
+rein index status --json
 ```
 
 Direct stage/runtime commands:

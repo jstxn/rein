@@ -68,6 +68,25 @@ function createCompletedInterview(targetRepo, idea = "rein go bundle") {
   return initState.slug;
 }
 
+function writeEvidenceMemory(targetRepo) {
+  const relativePath = ".rein/context/pressure-canary.md";
+  const targetPath = path.join(targetRepo, ...relativePath.split("/"));
+  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+  fs.writeFileSync(
+    targetPath,
+    [
+      "# Pressure Canary",
+      "",
+      "The pressure canary verification constraint must be checked before implementation.",
+      "Rejected: skipping the canary gate because it looks unrelated.",
+      "Tested: evidence context should cite this file before a stage begins.",
+    ].join("\n"),
+    "utf8",
+  );
+
+  return relativePath;
+}
+
 test("rein go starts a fresh flow and initializes interview state", () => {
   const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-fresh-"));
   const output = parseJson(runCli(cliPath, ["go", "Build rein go", "--json"], { cwd: targetRepo }));
@@ -115,6 +134,88 @@ test("rein go from an interview bundle completes planning and readies implementa
   const planPayload = JSON.parse(fs.readFileSync(output.artifactPaths.plan, "utf8"));
   assert.equal(planPayload.sourceInterview.slug, interviewSlug);
   assert.equal(planPayload.stages[0].stage, "implementation");
+  assert.equal(planPayload.evidenceContext.status, "missing");
+  assert.equal(planPayload.evidenceContext.recommendedCommand, "rein index build");
+});
+
+test("rein go attaches indexed evidence to plan and implementation artifacts", () => {
+  const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-indexed-evidence-"));
+  const interviewSlug = createCompletedInterview(targetRepo);
+  const evidencePath = writeEvidenceMemory(targetRepo);
+
+  runCli(cliPath, ["index", "build", "--json"], { cwd: targetRepo });
+
+  const output = parseJson(
+    runCli(
+      cliPath,
+      [
+        "go",
+        "--from-interview",
+        interviewSlug,
+        "--task",
+        "pressure canary verification constraint",
+        "--json",
+      ],
+      { cwd: targetRepo },
+    ),
+  );
+
+  const planPayload = JSON.parse(fs.readFileSync(output.artifactPaths.plan, "utf8"));
+  const implementationPayload = JSON.parse(
+    fs.readFileSync(output.stageResults.implementation.artifacts.instruction, "utf8"),
+  );
+
+  assert.equal(planPayload.evidenceContext.status, "ready");
+  assert.equal(implementationPayload.evidenceContext.status, "ready");
+  assert.ok(
+    planPayload.evidenceContext.results.some((result) => result.sourcePath === evidencePath),
+  );
+  assert.ok(
+    implementationPayload.evidenceContext.results.some(
+      (result) => result.sourcePath === evidencePath,
+    ),
+  );
+  assert.ok(
+    implementationPayload.evidenceContext.results.some((result) =>
+      result.pressureSignals.includes("constraint"),
+    ),
+  );
+});
+
+test("rein go evidence context filters stale indexed sources", () => {
+  const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-go-stale-evidence-"));
+  const interviewSlug = createCompletedInterview(targetRepo);
+  const evidencePath = writeEvidenceMemory(targetRepo);
+  const evidenceFullPath = path.join(targetRepo, ...evidencePath.split("/"));
+
+  runCli(cliPath, ["index", "build", "--json"], { cwd: targetRepo });
+  fs.writeFileSync(evidenceFullPath, "# Pressure Canary\n\nchanged after indexing\n", "utf8");
+
+  const output = parseJson(
+    runCli(
+      cliPath,
+      [
+        "go",
+        "--from-interview",
+        interviewSlug,
+        "--task",
+        "pressure canary verification constraint",
+        "--json",
+      ],
+      { cwd: targetRepo },
+    ),
+  );
+  const implementationPayload = JSON.parse(
+    fs.readFileSync(output.stageResults.implementation.artifacts.instruction, "utf8"),
+  );
+
+  assert.equal(implementationPayload.evidenceContext.status, "stale");
+  assert.equal(implementationPayload.evidenceContext.staleSourceCount, 1);
+  assert.ok(
+    implementationPayload.evidenceContext.results.every(
+      (result) => result.sourcePath !== evidencePath,
+    ),
+  );
 });
 
 test("rein go resume advances a completed interview into planning and implementation", () => {
