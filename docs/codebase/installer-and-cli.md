@@ -18,6 +18,7 @@
   - `remove` — removes REIN.md, all REIN skills, install notes, and the REIN block from AGENTS.md/CLAUDE.md. Preserves `.rein/` since it may contain work artifacts.
 - The `rein index` command family builds, queries, and status-checks a local evidence vector index under `.rein/index/`.
 - `rein index` is intentionally rebuildable: protocol docs, skills, codebase maps, interview/spec artifacts, and go-stage artifacts remain the source of truth.
+- `rein go` uses the index automatically when writing plan, implementation, cleanup, review, and verify artifacts.
 - AGENTS.md handling is idempotent: if a REIN block (delimited by HTML comment markers) already exists, it is replaced in place rather than duplicated.
 - Install notes include the installed version for drift detection by `status`.
 
@@ -27,6 +28,7 @@
 - The installer carries a hard-coded skill inventory through `REPO_SKILLS`.
 - Version is read from `package.json` and stamped into `.codex/rein-install/installed-from.txt`.
 - The evidence index is dependency-free and stores chunk metadata plus contiguous Float32 vectors locally.
+- Stage artifacts carry retrieved evidence as explicit JSON fields, not hidden prompt state.
 
 ## Dependencies And Touchpoints
 - `package.json` requires Node `>=18`.
@@ -40,4 +42,5 @@
 - Observed: `rein update` is a convenience alias for `init --force` with auto-detected repo path.
 - Observed: `rein eject` preserves `.rein/` to avoid deleting user work artifacts.
 - Observed: `rein index query` filters stale sources before returning results, so changed artifacts are not served as active evidence until rebuild.
+- Observed: `rein go` continues when the index is missing, but records `status: "missing"` and recommends `rein index build` inside the generated evidence context.
 - Inferred risk: Because the installer's file inventory is hard-coded across code and documentation, adding or renaming a skill requires touching multiple surfaces to keep the shipped package and docs aligned.

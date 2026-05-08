@@ -39,6 +39,7 @@ What `rein go` gives you:
 - a runtime-backed path from interview -> plan -> implementation -> cleanup -> review -> verify
 - `rein go status`, `rein go resume`, and `rein go advance` for inspecting or continuing the flow
 - the option to start from an already-completed interview bundle with `--from-interview`
+- automatic evidence context in plan and stage artifacts when a local `rein index` is available
 
 ## New: `rein index`
 
@@ -51,6 +52,8 @@ rein index status
 ```
 
 The index lives under `.rein/index/` and is always rebuildable from source artifacts. It uses deterministic local feature-hash vectors, BM25 lexical scoring, and REIN-specific pressure signals like constraints, acceptance criteria, decision boundaries, rejected alternatives, and verification notes. Query results include source paths, line numbers, and stale-source filtering so retrieved context stays evidence, not hidden state.
+
+When the index exists, `rein go` automatically queries it while generating the plan and later stage instruction artifacts. If the index is missing or stale, the flow still proceeds, but the generated artifact records that evidence status and filters stale sources instead of treating old retrieval results as active context.
 
 ## Install
 
