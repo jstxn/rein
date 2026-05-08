@@ -15,6 +15,9 @@ It adds:
 > [!NOTE]
 > New in REIN: `rein go` is the runtime-backed end-to-end flow. It starts the same user-facing interview that `rein-interview` uses, then carries the task through planning, implementation, cleanup, review, and verification with durable state under `.rein/`.
 
+> [!IMPORTANT]
+> New vector-backed evidence recall: run `rein index build` to give REIN a local, rebuildable index over protocol docs, skills, codebase maps, completed interviews, specs, and `rein go` artifacts. When the index exists, `rein go` automatically attaches matching evidence to plan and stage artifacts with source paths, line numbers, and stale-source status.
+
 ## New: `rein go`
 
 If you want one REIN-controlled workflow instead of manually invoking each stage, start here:
