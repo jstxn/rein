@@ -104,6 +104,50 @@ test("rein index builds a local vector store and queries pressure-aware evidence
   assert.ok(queried.results[0].scores.lexical > 0);
 });
 
+test("rein index handles inherited object-key tokens without corrupting scores", () => {
+  const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-index-inherited-token-"));
+  fs.writeFileSync(
+    path.join(targetRepo, "REIN.md"),
+    [
+      "# REIN",
+      "",
+      "A constructor token can appear in real source text without changing index scoring.",
+      "The constructor constraint should remain searchable with finite evidence scores.",
+    ].join("\n"),
+    "utf8",
+  );
+
+  runCli(cliPath, ["index", "build", "--json"], { cwd: targetRepo });
+
+  const chunksPath = path.join(targetRepo, ".rein", "index", "chunks.jsonl");
+  const chunks = fs
+    .readFileSync(chunksPath, "utf8")
+    .split(/\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+  const indexedChunk = chunks.find((chunk) => chunk.sourcePath === "REIN.md");
+
+  assert.equal(typeof indexedChunk.termCount, "number");
+  assert.ok(Number.isFinite(indexedChunk.termCount));
+  assert.equal(indexedChunk.terms.constructor, 4);
+
+  const queried = parseJson(
+    runCli(cliPath, ["index", "query", "constructor constraint", "--limit", "3", "--json"], {
+      cwd: targetRepo,
+    }),
+  );
+
+  assert.ok(queried.results.length > 0);
+  for (const result of queried.results) {
+    assert.equal(typeof result.score, "number");
+    assert.ok(Number.isFinite(result.score));
+    for (const score of Object.values(result.scores)) {
+      assert.equal(typeof score, "number");
+      assert.ok(Number.isFinite(score));
+    }
+  }
+});
+
 test("rein index status detects stale sources and query filters stale chunks", () => {
   const targetRepo = fs.mkdtempSync(path.join(os.tmpdir(), "rein-index-stale-"));
   writeIndexFixture(targetRepo);
