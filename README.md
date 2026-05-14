@@ -4,7 +4,7 @@
 
 # REIN (Regulated Execution and Inference Navigation)
 
-REIN is a **lightweight** and **hands-off** harness for stricter, more explicit engineering workflow with Codex and Claude Code.
+REIN is a **lightweight** and **hands-off** harness for stricter, more explicit engineering workflow with Codex, Claude Code, and Gemini CLI.
 
 It adds:
 - `REIN.md` for regulated execution and inference guidance
@@ -19,7 +19,7 @@ rein init
 ```
 
 Interactive install lets you choose:
-- which tool to target (Codex, Claude Code, or both)
+- which tool to target (Codex, Claude Code, Gemini CLI, or all)
 - the current repository, another repository, or your user-level setup
 
 Non-interactive examples:
@@ -27,10 +27,11 @@ Non-interactive examples:
 ```bash
 rein init --repo                        # default (Codex)
 rein init --repo --claude               # Claude Code only
-rein init --repo --codex --claude       # both
+rein init --repo --gemini               # Gemini CLI only
+rein init --repo --codex --claude --gemini # all
 rein init --repo --link                 # advanced: symlink packaged assets instead of copying
 rein init --repo /path/to/repo --claude
-rein init --user --claude
+rein init --user --gemini
 ```
 
 Other commands:
@@ -42,20 +43,24 @@ rein remove              # uninstall REIN from the repo (interactive)
 rein remove --yes        # uninstall without prompts (preserves .rein/ artifacts)
 ```
 
-The `--codex` and `--claude` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.
+The `--codex`, `--claude`, and `--gemini` flags work with `status`, `update`, and `remove` too. Without flags, these commands auto-detect which tools are installed.
 
 `rein init --link` and `rein update --link` are advanced options for users who want linked installs. Linked installs update from one source checkout, but they depend on that source path continuing to exist.
 
 ## What `rein init` adds
 
-| Surface | Codex (`--codex`, default) | Claude Code (`--claude`) |
-|---|---|---|
-| Protocol doc | `REIN.md` | `REIN.md` |
-| Artifact root | `.rein/`, `.rein/codebase/` | `.rein/`, `.rein/codebase/` |
-| Skills | `.codex/skills/` | `.claude/commands/` |
-| Guidance block | `AGENTS.md` | `CLAUDE.md` |
+| Surface | Codex (`--codex`, default) | Claude Code (`--claude`) | Gemini CLI (`--gemini`) |
+|---|---|---|---|
+| Protocol doc | `REIN.md` | `REIN.md` | `REIN.md` |
+| Artifact root | `.rein/`, `.rein/codebase/` | `.rein/`, `.rein/codebase/` | `.rein/`, `.rein/codebase/` |
+| Skills | `.codex/skills/` | `.claude/commands/` | `.gemini/skills/` |
+| Guidance block | `AGENTS.md` | `CLAUDE.md` | `GEMINI.md` |
 
-Both targets install the same 9 skills:
+All targets install the same 9 REIN workflows. Codex and Claude Code keep the
+`rein-*` names shown below; Gemini CLI installs the same workflows without the
+redundant `rein-` skill prefix. Workspace installs show names like `verify`,
+and the Gemini extension namespace shows names like `rein:verify`,
+`rein:triage`, and `rein:cleanup`.
 
 - `rein-interview`
 - `rein-inspect`
@@ -74,9 +79,10 @@ By default, `rein init` copies these surfaces into the target. With `--link`, RE
 Typical workflow:
 
 1. Run `rein init` in the repo you want to use.
-2. Start a new Codex or Claude Code session in that repo.
-3. Let `AGENTS.md` / `CLAUDE.md` route work through `REIN.md`.
-4. Use:
+2. Start a new Codex, Claude Code, or Gemini CLI session in that repo.
+3. Let `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` route work through `REIN.md`.
+4. Use the REIN workflow skills (`verify`, `triage`, etc. in Gemini CLI;
+   `rein-verify`, `rein-triage`, etc. in Codex and Claude Code):
    - `rein-interview` for vague or underspecified work
    - `rein-inspect` for a durable repo map
    - `rein-triage` before ambiguous or multi-file changes

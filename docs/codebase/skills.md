@@ -1,7 +1,7 @@
 # Skills
 
 ## What This Area Does
-- Defines the repo-local Codex skills that the harness expects agents to use for clarification, inspection, triage, cleanup, verification, and retrospection.
+- Defines the repo-local REIN workflows that the harness expects agents to use for clarification, inspection, triage, cleanup, verification, and retrospection.
 
 ## Key Paths
 - `.codex/skills/rein-interview/SKILL.md`
@@ -13,6 +13,8 @@
 - `.codex/skills/rein-scope/SKILL.md`
 - `.codex/skills/rein-diff-review/SKILL.md`
 - `.codex/skills/rein-cleanup/SKILL.md`
+- `.gemini/skills/*/SKILL.md`
+- `.claude/commands/rein-*.md`
 
 ## How It Works
 - `rein-interview` is an intent-first clarification workflow that writes `.rein/` artifacts before implementation.
@@ -27,19 +29,20 @@
 - These skills are treated as companions to `REIN.md` rather than generic standalone utilities.
 
 ## Patterns And Conventions
-- Skills are plain `SKILL.md` files with short frontmatter plus a structured body.
+- Codex and Gemini skills are plain `SKILL.md` files with short frontmatter plus a structured body; Claude Code uses command markdown files for the same workflows.
+- Gemini skill directories and frontmatter intentionally omit the redundant `rein-` prefix so workspace skills render as `verify` and the Gemini extension namespace renders `rein:verify` instead of `rein:rein-verify`; Codex skills and Claude commands keep `rein-*`.
 - The skill set is workflow-oriented rather than domain-oriented; each one corresponds to a stage in how the harness expects work to happen.
 - `rein-interview` and `rein-inspect` are broader orchestration skills, while `rein-triage`, `rein-plan`, `rein-scope`, `rein-diff-review`, `rein-verify`, and `rein-retro` are narrowly scoped procedural checkpoints.
 - `rein-cleanup` is the most prescriptive skill and includes explicit pass ordering, quality gates, and output format.
 
 ## Dependencies And Touchpoints
-- The skill inventory is referenced in `REIN.md`, `AGENTS.md`, `README.md`, and `lib/cli.js`.
+- The skill inventory is referenced in `REIN.md`, `AGENTS.md`, `README.md`, generated tool guidance, and `lib/cli.js`.
 - `rein-interview` writes artifacts into `.rein/context/`, `.rein/interviews/`, and `.rein/specs/`.
 - `rein-inspect` writes artifacts into `.rein/codebase/`.
 - This repo's checked-in documentation under `docs/codebase/` is separate from packaged skill output and exists as repository reference material.
 
 ## Findings
-- Observed: The active repo-local skill files are `rein-interview`, `rein-inspect`, `rein-triage`, `rein-plan`, `rein-scope`, `rein-diff-review`, `rein-verify`, `rein-retro`, and `rein-cleanup`.
+- Observed: The active repo-local workflows are `rein-interview`, `rein-inspect`, `rein-triage`, `rein-plan`, `rein-scope`, `rein-diff-review`, `rein-verify`, `rein-retro`, and `rein-cleanup`.
 - Observed: `REIN.md`, `README.md`, and the installer now name `rein-inspect` alongside the other packaged skills.
 - Observed: `rein-interview` is the most artifact-heavy skill and persists state in `.rein/`.
 - Observed: `rein-inspect` is the only current packaged skill that explicitly generates maintained docs under `.rein/codebase/`.

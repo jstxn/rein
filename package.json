@@ -1,7 +1,7 @@
 {
   "name": "@jstxn/rein",
   "version": "0.2.1",
-  "description": "REIN harness installer for Codex and Claude Code",
+  "description": "REIN harness installer for Codex, Claude Code, and Gemini CLI",
   "type": "module",
   "bin": {
     "rein": "bin/rein.js"
@@ -13,6 +13,7 @@
     "AGENTS.md",
     ".codex/skills",
     ".claude/commands",
+    ".gemini/skills",
     "README.md"
   ],
   "engines": {

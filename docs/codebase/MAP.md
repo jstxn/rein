@@ -14,7 +14,7 @@ This directory is the entrypoint for navigating the REIN harness codebase.
   The publishable Node entrypoint, installer logic, and legacy shell wrapper.
 
 - [Skills](./skills.md)
-  The repo-local Codex skills and the workflow they are meant to support.
+  The repo-local REIN workflows and their Codex, Claude Code, and Gemini CLI surfaces.
 
 ## Reading Order
 
@@ -25,4 +25,4 @@ This directory is the entrypoint for navigating the REIN harness codebase.
 
 ## Current Scope
 
-This map reflects the repository as inspected on April 14, 2026. It focuses on the shipped harness, its installer, its repo-local Codex surfaces, and the working artifacts currently present alongside them.
+This map reflects the repository as inspected on April 14, 2026 and updated for Gemini CLI support on May 14, 2026. It focuses on the shipped harness, its installer, its repo-local agent surfaces, and the working artifacts currently present alongside them.

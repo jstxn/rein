@@ -41,6 +41,40 @@ function runCliText(cli, args, options = {}) {
   return runCli(cli, args, options).toString();
 }
 
+test("Gemini extension skills avoid a duplicated rein prefix", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "gemini-extension.json"), "utf8"),
+  );
+  const geminiSkillNames = [
+    "cleanup",
+    "diff-review",
+    "inspect",
+    "interview",
+    "plan",
+    "retro",
+    "scope",
+    "triage",
+    "verify",
+  ];
+
+  assert.equal(manifest.name, "rein");
+  assert.ok(
+    !fs.existsSync(path.join(repoRoot, "commands")),
+    "Gemini extension should expose skills, not commands",
+  );
+
+  for (const skill of geminiSkillNames) {
+    const skillFile = path.join(repoRoot, "skills", skill, "SKILL.md");
+    const body = fs.readFileSync(skillFile, "utf8");
+    assert.match(body, new RegExp(`^name: ${escapeRegExp(skill)}$`, "m"));
+  }
+
+  assert.ok(
+    !fs.existsSync(path.join(repoRoot, "skills", "rein-verify")),
+    "Gemini extension should display rein:verify, not rein:rein-verify",
+  );
+});
+
 test("rein init --repo (default) installs Codex surfaces only", () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-"));
   const targetRepo = path.join(tempRoot, "target");
@@ -97,6 +131,10 @@ test("rein init --repo (default) installs Codex surfaces only", () => {
   assert.ok(
     !fs.existsSync(path.join(targetRepo, ".claude", "commands")),
     "default should not create .claude/commands",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "skills")),
+    "default should not create .gemini/skills",
   );
 });
 
@@ -162,6 +200,131 @@ test("rein init --repo --claude installs Claude surfaces only", () => {
     !fs.existsSync(path.join(targetRepo, ".codex", "skills")),
     "claude-only should not create .codex/skills",
   );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "skills")),
+    "claude-only should not create .gemini/skills",
+  );
+});
+
+test("rein init --repo --gemini installs Gemini surfaces only", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-gemini-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+  fs.writeFileSync(
+    path.join(targetRepo, "GEMINI.md"),
+    "# Existing Gemini context\n",
+  );
+
+  runCli(cliPath, ["init", "--repo", targetRepo, "--gemini", "--force"], {
+    cwd: repoRoot,
+  });
+
+  const geminiPath = path.join(targetRepo, "GEMINI.md");
+  const skillPath = path.join(
+    targetRepo,
+    ".gemini",
+    "skills",
+    "interview",
+    "SKILL.md",
+  );
+  const inspectSkillPath = path.join(
+    targetRepo,
+    ".gemini",
+    "skills",
+    "inspect",
+    "SKILL.md",
+  );
+  const geminiBody = fs.readFileSync(geminiPath, "utf8");
+  const skillBody = fs.readFileSync(skillPath, "utf8");
+  const inspectSkillBody = fs.readFileSync(inspectSkillPath, "utf8");
+
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, ".rein", "codebase")),
+    "expected .rein/codebase directory",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, "REIN.md")),
+    "expected REIN.md",
+  );
+
+  assert.match(geminiBody, /## REIN/);
+  assert.match(geminiBody, /Existing Gemini context/);
+  assert.match(geminiBody, /`inspect`/);
+  assert.match(geminiBody, /`interview`/);
+  assert.doesNotMatch(geminiBody, /`rein-inspect`/);
+  assert.doesNotMatch(geminiBody, /`rein-interview`/);
+  assert.match(skillBody, /\.rein\/context\//);
+  assert.match(skillBody, /\.rein\/specs\//);
+  assert.match(skillBody, /^name: interview$/m);
+  assert.match(inspectSkillBody, /\.rein\/codebase\//);
+  assert.match(inspectSkillBody, /^name: inspect$/m);
+
+  assert.ok(
+    fs.existsSync(
+      path.join(targetRepo, ".gemini", "rein-install", "installed-from.txt"),
+    ),
+    "expected gemini install notes",
+  );
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, "AGENTS.md")),
+    "gemini-only should not create AGENTS.md",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, "CLAUDE.md")),
+    "gemini-only should not create CLAUDE.md",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".codex", "skills")),
+    "gemini-only should not create .codex/skills",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".claude", "commands")),
+    "gemini-only should not create .claude/commands",
+  );
+
+  const statusOutput = runCliText(
+    cliPath,
+    ["status", "--repo", targetRepo, "--gemini"],
+    {
+      cwd: repoRoot,
+      env: { ...process.env, NO_COLOR: "1" },
+    },
+  );
+  assert.match(statusOutput, /Gemini CLI/);
+  assert.match(statusOutput, /GEMINI\.md/);
+  assert.match(statusOutput, /verify/);
+  assert.doesNotMatch(statusOutput, /rein-verify/);
+
+  const legacySkillDir = path.join(
+    targetRepo,
+    ".gemini",
+    "skills",
+    "rein-verify",
+  );
+  fs.mkdirSync(legacySkillDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(legacySkillDir, "SKILL.md"),
+    "---\nname: rein-verify\n---\n",
+  );
+
+  runCli(cliPath, ["remove", "--repo", targetRepo, "--gemini", "--yes"], {
+    cwd: repoRoot,
+  });
+
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "skills", "verify")),
+    "expected remove --gemini to remove Gemini skills",
+  );
+  assert.ok(
+    !fs.existsSync(legacySkillDir),
+    "expected remove --gemini to remove legacy prefixed Gemini skills",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "rein-install")),
+    "expected remove --gemini to remove Gemini install notes",
+  );
 });
 
 test("rein init --repo --codex --claude installs both surfaces", () => {
@@ -220,6 +383,91 @@ test("rein init --repo --codex --claude installs both surfaces", () => {
     ),
     "expected claude install notes",
   );
+});
+
+test("rein init --repo --codex --claude --gemini installs all surfaces", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rein-init-all-"));
+  const targetRepo = path.join(tempRoot, "target");
+
+  fs.mkdirSync(targetRepo, { recursive: true });
+
+  runCli(
+    cliPath,
+    ["init", "--repo", targetRepo, "--codex", "--claude", "--gemini", "--force"],
+    {
+      cwd: repoRoot,
+    },
+  );
+
+  assert.ok(
+    fs.existsSync(
+      path.join(targetRepo, ".codex", "skills", "rein-verify", "SKILL.md"),
+    ),
+    "expected codex skill",
+  );
+  assert.ok(
+    fs.existsSync(
+      path.join(targetRepo, ".claude", "commands", "rein-verify.md"),
+    ),
+    "expected claude command",
+  );
+  assert.ok(
+    fs.existsSync(
+      path.join(targetRepo, ".gemini", "skills", "verify", "SKILL.md"),
+    ),
+    "expected gemini skill",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "skills", "rein-verify")),
+    "gemini skills should omit the redundant rein- prefix",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, "AGENTS.md")),
+    "expected AGENTS.md",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, "CLAUDE.md")),
+    "expected CLAUDE.md",
+  );
+  assert.ok(
+    fs.existsSync(path.join(targetRepo, "GEMINI.md")),
+    "expected GEMINI.md",
+  );
+  assert.ok(
+    !fs.existsSync(path.join(targetRepo, ".gemini", "commands")),
+    "all install should not create duplicate Gemini command aliases",
+  );
+});
+
+test("rein init interactive tool picker includes Gemini CLI", () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "rein-init-interactive-gemini-"),
+  );
+  const sourceRepo = path.join(tempRoot, "source");
+
+  copyRepo(sourceRepo);
+
+  const copiedCliPath = path.join(sourceRepo, "bin", "rein.js");
+  let output = "";
+
+  assert.throws(
+    () =>
+      execFileSync(process.execPath, [copiedCliPath, "init"], {
+        cwd: sourceRepo,
+        env: { ...process.env, NO_COLOR: "1" },
+        input: "x\n",
+        stdio: "pipe",
+      }),
+    (error) => {
+      output = error.stdout.toString();
+      assert.match(error.stderr.toString(), /Invalid selection/);
+      return true;
+    },
+  );
+
+  assert.match(output, /Which tool\(s\) should REIN target\?/);
+  assert.match(output, /Gemini CLI/);
+  assert.match(output, /All/);
 });
 
 test("rein init --repo . --force succeeds when reinstalling a dev checkout into itself", () => {

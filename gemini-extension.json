@@ -1,0 +1,6 @@
+{
+  "name": "rein",
+  "version": "0.2.1",
+  "description": "Regulated Execution and Inference Navigation protocol for AI coding agents.",
+  "contextFileName": "GEMINI.md"
+}
