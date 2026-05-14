@@ -47,6 +47,66 @@ The `--codex`, `--claude`, and `--gemini` flags work with `status`, `update`, an
 
 `rein init --link` and `rein update --link` are advanced options for users who want linked installs. Linked installs update from one source checkout, but they depend on that source path continuing to exist.
 
+## Gemini CLI usage options
+
+REIN supports Gemini CLI in two different ways, depending on whether you want a
+repo-managed install or a Gemini-managed extension install.
+
+### Option 1: `rein init --gemini`
+
+Use this when you want REIN installed into a specific repository or into your
+user-level Gemini setup with the same lifecycle as Codex and Claude Code.
+
+```bash
+# Current repository
+rein init --repo --gemini
+
+# Another repository
+rein init --repo /path/to/repo --gemini
+
+# User-level Gemini setup
+rein init --user --gemini
+```
+
+This writes Gemini-native REIN surfaces:
+
+```text
+.gemini/skills/<workflow>/SKILL.md
+GEMINI.md
+.gemini/rein-install/installed-from.txt
+```
+
+Use this path when you want `rein status`, `rein update`, and `rein remove` to
+manage the Gemini install.
+
+### Option 2: Gemini extension install
+
+Use this when you want Gemini CLI to manage REIN as an extension. This is the
+most native Gemini CLI experience: the extension is named `rein`, and Gemini
+shows workflows as extension-scoped skills such as `rein:verify`,
+`rein:triage`, and `rein:cleanup`.
+
+```bash
+gemini extensions install https://github.com/jstxn/rein
+```
+
+For local development or testing an unpublished checkout:
+
+```bash
+gemini extensions install /path/to/rein
+# or link the checkout so changes are picked up without reinstalling
+gemini extensions link /path/to/rein
+```
+
+Gemini extension management commands run from your terminal, not from inside an
+interactive Gemini CLI session. Restart Gemini CLI after installing, updating,
+or linking an extension so the new skills are loaded.
+
+Use this path when you want a Gemini-managed extension instead of repo-local
+files written by `rein init`. Gemini copies installed extensions, so run
+`gemini extensions update rein` when you want to pull in changes from the
+source.
+
 ## What `rein init` adds
 
 | Surface | Codex (`--codex`, default) | Claude Code (`--claude`) | Gemini CLI (`--gemini`) |
